@@ -1,0 +1,25 @@
+/* ── React SPA additions ───────────────────────────────────── */
+.mc-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:16px; color:var(--mc-muted); }
+.mc-spinner { width:40px; height:40px; border-radius:50%; border:3px solid var(--mc-border); border-top-color:var(--mc-primary); animation:spin .7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.mc-app { display:flex; flex-direction:column; min-height:100vh; }
+.mc-page-content { flex:1; }
+.mc-session-root { padding:0 24px 40px; max-width:1200px; margin:0 auto; }
+.mc-chat-msg { display:flex; flex-direction:column; gap:2px; margin-bottom:8px; }
+.mc-chat-msg.mine { align-items:flex-end; }
+.mc-chat-msg-author { font-size:.72rem; color:var(--mc-muted); font-weight:600; padding:0 4px; }
+.mc-chat-msg-body { background:var(--mc-surface-2); border:1px solid var(--mc-border); border-radius:12px 12px 12px 3px; padding:8px 12px; font-size:.875rem; max-width:80%; }
+.mc-chat-msg.mine .mc-chat-msg-body { background:rgba(var(--mc-primary-rgb),.12); border-color:rgba(var(--mc-primary-rgb),.2); border-radius:12px 12px 3px 12px; }
+.mc-day-btn { cursor:pointer; }
+.mc-video-self-label { position:absolute; bottom:120px; right:14px; background:rgba(0,0,0,.55); color:#fff; font-size:.7rem; padding:2px 8px; border-radius:99px; }
+.mc-video-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:rgba(255,255,255,.5); gap:10px; background:#111; }
+.mc-video-placeholder .bi { font-size:2.5rem; }
+.mc-ctrl-label { font-size:.7rem; display:block; margin-top:2px; }
+
+@media (max-width:700px) {
+  .mc-settings-layout { grid-template-columns:1fr; }
+  .mc-payment-grid { grid-template-columns:1fr; }
+  .mc-session-layout { grid-template-columns:1fr; height:auto; }
+  .mc-video-local { width:100px; height:68px; }
+  .mc-session-controls { flex-wrap:wrap; justify-content:center; }
+}
