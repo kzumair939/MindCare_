@@ -1,7 +1,7 @@
 import React,{useState} from "react";
 import {useNavigate,useSearchParams} from "react-router-dom";
 import api from "../../api/axios";
-import AppShell from "../../components/layout/AppShell";
+import PublicShell from "../../components/layout/PublicShell";
 
 export default function ResetPassword() {
   const [params]=useSearchParams(); const nav=useNavigate();
@@ -11,7 +11,7 @@ export default function ResetPassword() {
     try { await api.post("/auth/reset-password",{token:params.get("token"),password:pw}); nav("/login?reset"); }
     catch(e) { setErr(e.response?.data?.error||"Reset failed"); }
   }
-  return <AppShell><main className="mc-auth-main"><div className="mc-auth-container" style={{gridTemplateColumns:"1fr"}}>
+  return <PublicShell><main className="mc-auth-main"><div className="mc-auth-container" style={{gridTemplateColumns:"1fr"}}>
     <div className="mc-auth-form-panel"><div className="mc-auth-form-inner">
       <h2 className="mc-auth-title">Reset password</h2>
       {err && <div className="alert alert-danger">{err}</div>}
@@ -30,5 +30,6 @@ export default function ResetPassword() {
         <button className="btn btn-primary w-100" type="submit">Reset password</button>
       </form>
     </div></div>
-  </div></main></AppShell>;
+  </div></main></PublicShell>;
 }
+

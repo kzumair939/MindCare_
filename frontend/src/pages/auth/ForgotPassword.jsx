@@ -1,7 +1,7 @@
 import React,{useState} from "react";
 import {Link} from "react-router-dom";
 import api from "../../api/axios";
-import AppShell from "../../components/layout/AppShell";
+import PublicShell from "../../components/layout/PublicShell";
 
 export default function ForgotPassword() {
   const [email,setEmail]=useState(""); const [msg,setMsg]=useState(""); const [err,setErr]=useState("");
@@ -10,7 +10,7 @@ export default function ForgotPassword() {
     try { await api.post("/auth/forgot-password",{email}); setMsg("Reset link sent! Check your email."); }
     catch(e) { setErr(e.response?.data?.error||"Error sending link"); }
   }
-  return <AppShell><main className="mc-auth-main"><div className="mc-auth-container" style={{gridTemplateColumns:"1fr"}}>
+  return <PublicShell><main className="mc-auth-main"><div className="mc-auth-container" style={{gridTemplateColumns:"1fr"}}>
     <div className="mc-auth-form-panel"><div className="mc-auth-form-inner">
       <h2 className="mc-auth-title">Forgot password</h2>
       {msg && <div className="alert alert-success">{msg}</div>}
@@ -25,5 +25,6 @@ export default function ForgotPassword() {
       </form>
       <div className="mc-auth-switch"><Link to="/login">Back to login</Link></div>
     </div></div>
-  </div></main></AppShell>;
+  </div></main></PublicShell>;
 }
+

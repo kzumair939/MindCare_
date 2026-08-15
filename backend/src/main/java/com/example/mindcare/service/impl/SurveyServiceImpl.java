@@ -9,6 +9,8 @@ import com.example.mindcare.repository.SurveyResultRepository;
 import com.example.mindcare.repository.UserRepository;
 import com.example.mindcare.service.SurveyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,12 +25,18 @@ public class SurveyServiceImpl implements SurveyService {
     private final UserRepository userRepository;
 
     @Override
+    @Cacheable(value = "surveyResult", key = "#identifier")
     public SurveyResult getForUser(String identifier) {
         User user = findUser(identifier);
         return surveyResultRepository.findByUser_Id(user.getId()).orElse(null);
     }
 
+    /**
+     * Saves the survey result and immediately refreshes the cache entry for this user
+     * via @CachePut — no eviction/re-fetch round-trip needed on the next read.
+     */
     @Override
+    @CachePut(value = "surveyResult", key = "#identifier")
     public SurveyResult saveForUser(String identifier, SurveyFormDto form) {
         User user = findUser(identifier);
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AppShell from "../../components/layout/AppShell";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
+import { useCache } from "../../hooks/useCache";
 
 const THERAPY_TYPES = [
   ["CBT","CBT – Cognitive Behavioural Therapy"],
@@ -27,6 +28,7 @@ function formatSlotTime(time24) {
 export default function BookSession() {
   const { user } = useAuth();
   const nav = useNavigate();
+  const { cachedFetch, invalidate } = useCache();
   const [therapists, setTherapists] = useState([]);
   const [form, setForm] = useState({
     therapistId: "", therapyType: "", sessionType: "ONLINE", date: "", time: ""
@@ -42,10 +44,12 @@ export default function BookSession() {
   const freeLeft = Math.max(0, 2 - (user?.freeSessionsUsed || 0));
 
   useEffect(() => {
-    api.get("/therapist/all")
-      .then(r => setTherapists(r.data))
+    // Cache the therapist list for 5 minutes — it rarely changes
+    cachedFetch("therapists:all", () => api.get("/therapist/all").then(r => r.data), 5 * 60 * 1000)
+      .then(data => setTherapists(data))
+      .catch(() => setTherapists([]))
       .finally(() => setFetching(false));
-  }, []);
+  }, [cachedFetch]);
 
   useEffect(() => {
     if (user?.recommendedTherapy) {
@@ -118,6 +122,8 @@ export default function BookSession() {
     setError(""); setLoading(true);
     try {
       const { data } = await api.post("/session/book", { ...form, therapistId: Number(form.therapistId) });
+      // Invalidate therapist cache so availability is fresh on next visit
+      invalidate("therapists:all");
       nav(`/payment/${data.id}`);
     } catch (err) {
       setError(err.response?.data?.error || "Booking failed. Please try again.");

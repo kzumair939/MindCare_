@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import AppShell from "../../components/layout/AppShell";
+import PublicShell from "../../components/layout/PublicShell";
 
 export default function Login() {
   const { login } = useAuth();
@@ -29,7 +29,8 @@ export default function Login() {
   }
 
   return (
-    <AppShell>
+    <PublicShell>
+
       <main className="mc-auth-main">
         <div className="mc-auth-container">
           {/* Left decorative panel */}
@@ -133,6 +134,7 @@ export default function Login() {
           </div>
         </div>
       </main>
-    </AppShell>
+    </PublicShell>
   );
 }
+

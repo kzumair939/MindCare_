@@ -11,6 +11,9 @@ import com.example.mindcare.repository.UserRepository;
 import com.example.mindcare.service.UserService;
 import com.example.mindcare.service.EmailOtpService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,12 +68,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "userByIdentifier", key = "#identifier")
     public Optional<User> findByIdentifier(String identifier) {
         return userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByUsername(identifier));
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "userByIdentifier", key = "#identifier"),
+        @CacheEvict(value = "userDetails", key = "#identifier")
+    })
     public void updateProfile(String identifier, UserProfileDto dto) {
         User user = findByIdentifier(identifier)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -90,6 +98,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "userByIdentifier", key = "#identifier"),
+        @CacheEvict(value = "userDetails", key = "#identifier")
+    })
     public void toggleAnonymousMode(String identifier) {
         User user = findByIdentifier(identifier)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -98,6 +110,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "userByIdentifier", key = "#identifier"),
+        @CacheEvict(value = "userDetails", key = "#identifier")
+    })
     public void deleteAccount(String identifier) {
         User user = findByIdentifier(identifier)
                 .orElseThrow(() -> new NotFoundException("User not found"));

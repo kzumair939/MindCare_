@@ -8,6 +8,8 @@ import com.example.mindcare.repository.*;
 import com.example.mindcare.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,7 @@ public class GroupServiceImpl implements GroupService {
 
     // ─── room creation (therapist only) ────────────────────────
     @Override
+    @CacheEvict(value = "activeGroups", allEntries = true)
     public GroupRoom createRoom(String therapistIdentifier, GroupRoomDto dto) {
         User user = findUser(therapistIdentifier);
         // Only ROLE_THERAPIST may create rooms
@@ -109,6 +112,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "activeGroups", allEntries = true)
     public GroupRoom joinByCodeAndReturn(String code, String userIdentifier) {
         GroupRoom room = roomRepository.findByJoinCode(code.toUpperCase())
                 .filter(GroupRoom::isActive)
@@ -182,6 +186,7 @@ public class GroupServiceImpl implements GroupService {
 
     // ─── room queries ─────────────────────────────────────────────
     @Override
+    @Cacheable("activeGroups")
     public List<GroupRoom> getActiveRooms() {
         return roomRepository.findByActiveTrue();
     }
@@ -271,6 +276,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "activeGroups", allEntries = true)
     public void deleteRoom(Long roomId, String therapistIdentifier) {
         GroupRoom room = getRoom(roomId);
         User user = findUser(therapistIdentifier);

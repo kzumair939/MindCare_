@@ -11,6 +11,9 @@ import com.example.mindcare.repository.TherapistRepository;
 import com.example.mindcare.repository.UserRepository;
 import com.example.mindcare.service.TherapistService;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +42,7 @@ public class TherapistServiceImpl implements TherapistService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Cacheable("therapists")
     public List<Therapist> getAllTherapists() {
         return therapistRepository.findAll();
     }
@@ -122,6 +126,7 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Cacheable("activeTherapists")
     public List<Therapist> getAllActiveTherapists() {
         return therapistRepository.findByActiveTrueOrderBySeniorDescNameAsc();
     }
@@ -131,6 +136,10 @@ public class TherapistServiceImpl implements TherapistService {
     // =========================
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "therapists", allEntries = true),
+        @CacheEvict(value = "activeTherapists", allEntries = true)
+    })
     public Therapist createTherapist(Therapist therapist) {
         therapist.setId(null);
         // default active true unless admin unchecked
@@ -138,6 +147,11 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "therapists", allEntries = true),
+        @CacheEvict(value = "activeTherapists", allEntries = true),
+        @CacheEvict(value = "therapistById", key = "#id")
+    })
     public Therapist updateTherapist(Long id, Therapist updated) {
         Therapist existing = therapistRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Therapist not found"));
@@ -158,6 +172,7 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @CacheEvict(value = "therapistById", key = "#therapistId")
     public void verifyTherapist(Long therapistId, boolean verified) {
         Therapist t = therapistRepository.findById(therapistId)
                 .orElseThrow(() -> new NotFoundException("Therapist not found"));
@@ -194,6 +209,11 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "therapists", allEntries = true),
+        @CacheEvict(value = "activeTherapists", allEntries = true),
+        @CacheEvict(value = "therapistById", key = "#id")
+    })
     public void deactivateTherapist(Long id) {
         Therapist existing = therapistRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Therapist not found"));
@@ -202,6 +222,11 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "therapists", allEntries = true),
+        @CacheEvict(value = "activeTherapists", allEntries = true),
+        @CacheEvict(value = "therapistById", key = "#id")
+    })
     public void activateTherapist(Long id) {
         Therapist existing = therapistRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Therapist not found"));
@@ -210,6 +235,7 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Cacheable(value = "therapistById", key = "#id")
     public Therapist getTherapistById(Long id) {
         return therapistRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Therapist not found"));

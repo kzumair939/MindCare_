@@ -2,22 +2,29 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AppShell from "../../components/layout/AppShell";
 import api from "../../api/axios";
+import { useCache } from "../../hooks/useCache";
 
 export default function AdminAnalytics() {
   const [data, setData] = useState(null);
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("overview");
+  const { cachedFetch } = useCache();
 
   useEffect(() => {
+    // Cache analytics data for 3 minutes — expensive aggregate queries
+    const TTL = 3 * 60 * 1000;
     Promise.all([
-      api.get("/admin/analytics").catch(() => ({ data: {} })),
-      api.get("/admin/feedback").catch(() => ({ data: [] })),
-    ]).then(([a, f]) => {
-      setData(a.data || {});
-      setFeedback(f.data || []);
+      cachedFetch("admin:analytics", () => api.get("/admin/analytics").then(r => r.data || {}), TTL),
+      cachedFetch("admin:feedback",  () => api.get("/admin/feedback").then(r => r.data || []),  TTL),
+    ]).then(([analyticsData, feedbackData]) => {
+      setData(analyticsData);
+      setFeedback(feedbackData);
+    }).catch(() => {
+      setData({});
+      setFeedback([]);
     }).finally(() => setLoading(false));
-  }, []);
+  }, [cachedFetch]);
 
   function StarRating({ rating }) {
     return (

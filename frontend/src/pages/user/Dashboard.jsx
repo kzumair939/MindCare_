@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import AppShell from "../../components/layout/AppShell";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
+import { useCache } from "../../hooks/useCache";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -11,25 +12,27 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(false);
   const mainRef = useRef(null);
+  const { cachedFetch } = useCache();
 
   useEffect(() => {
-    Promise.all([
-      api.get("/session/my").catch(() => ({ data: [] })),
-    ]).then(([sessRes]) => {
-      const all = sessRes.data || [];
-      const now = new Date();
-      const upcoming = all.filter(s => new Date(s.sessionDate) >= now && s.status !== "CANCELLED");
-      const completed = all.filter(s => s.status === "COMPLETED");
-      const used = all.filter(s => s.status !== "CANCELLED").length;
-      setStats({
-        total: all.length,
-        upcoming: upcoming.length,
-        completed: completed.length,
-        freeLeft: Math.max(0, 2 - used),
-      });
-      setSessions(all.slice(0, 3));
-    }).finally(() => setLoading(false));
-  }, []);
+    // Cache my sessions for 1 minute — frequent navigation shouldn't cause repeated DB reads
+    cachedFetch("sessions:my", () => api.get("/session/my").then(r => r.data || []), 60 * 1000)
+      .then(all => {
+        const now = new Date();
+        const upcoming = all.filter(s => new Date(s.sessionDate) >= now && s.status !== "CANCELLED");
+        const completed = all.filter(s => s.status === "COMPLETED");
+        const used = all.filter(s => s.status !== "CANCELLED").length;
+        setStats({
+          total: all.length,
+          upcoming: upcoming.length,
+          completed: completed.length,
+          freeLeft: Math.max(0, 2 - used),
+        });
+        setSessions(all.slice(0, 3));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [cachedFetch]);
 
   // Trigger entrance animations after mount
   useEffect(() => {

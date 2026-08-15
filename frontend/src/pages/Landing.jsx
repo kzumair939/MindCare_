@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import AppShell from "../components/layout/AppShell";
+import PublicShell from "../components/layout/PublicShell";
+
 
 const FEATURES = [
   ["gift-fill","2 Free Sessions","Start with zero cost. No card required.","green"],
@@ -42,8 +43,9 @@ export default function Landing() {
   }, []);
 
   return (
-    <AppShell hideFooter={false}>
+    <PublicShell hideFooter={false}>
       <main>
+
         {/* ── HERO ── */}
         <section className="mc-landing-hero">
           <div className="mc-landing-glow"/>
@@ -192,6 +194,7 @@ export default function Landing() {
           </div>
         </section>
       </main>
-    </AppShell>
+    </PublicShell>
   );
 }
+

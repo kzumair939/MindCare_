@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import AppShell from "../../components/layout/AppShell";
+import PublicShell from "../../components/layout/PublicShell";
+
 
 export default function Signup() {
   const { register } = useAuth();
@@ -34,7 +35,8 @@ export default function Signup() {
   }
 
   return (
-    <AppShell>
+    <PublicShell>
+
       <main className="mc-auth-main">
         <div className="mc-auth-container">
           <div className="mc-auth-side">
@@ -148,6 +150,7 @@ export default function Signup() {
           </div>
         </div>
       </main>
-    </AppShell>
+    </PublicShell>
   );
 }
+

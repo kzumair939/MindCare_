@@ -1,10 +1,10 @@
 import React, { useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Nav from "./Nav";
+import PublicNav from "./PublicNav";
 import Footer from "./Footer";
 import useScrollReveal from "../../hooks/useScrollReveal";
 
-export default function AppShell({ children, hideFooter = true }) {
+export default function PublicShell({ children, hideFooter = false }) {
   const contentRef = useRef(null);
   const { pathname } = useLocation();
   useScrollReveal(contentRef);
@@ -14,14 +14,12 @@ export default function AppShell({ children, hideFooter = true }) {
   }, [pathname]);
 
   return (
-    <div className="mc-authenticated-app">
-      <Nav />
+    <div className="mc-public-app">
+      <PublicNav />
       <div className="mc-page-content" ref={contentRef}>
         {children}
-        {!hideFooter && <Footer />}
       </div>
+      {!hideFooter && <Footer />}
     </div>
   );
 }
-
-

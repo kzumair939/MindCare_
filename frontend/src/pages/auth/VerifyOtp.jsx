@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import AppShell from "../../components/layout/AppShell";
+import PublicShell from "../../components/layout/PublicShell";
 
 export default function VerifyOtp() {
   const { verifyOtp, resendOtp } = useAuth();
@@ -64,7 +64,8 @@ export default function VerifyOtp() {
   }
 
   return (
-    <AppShell>
+    <PublicShell>
+
       <main className="mc-auth-main">
         <div className="mc-auth-container">
           {/* Left decorative panel */}
@@ -172,6 +173,7 @@ export default function VerifyOtp() {
           </div>
         </div>
       </main>
-    </AppShell>
+    </PublicShell>
   );
 }
+

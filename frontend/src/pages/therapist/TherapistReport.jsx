@@ -179,7 +179,8 @@ export default function TherapistReport() {
           </div>
 
           {/* Bottom Card: Rating & Sharing Toggle */}
-          <div className="mc-card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", padding: "28px", border: "1.5px solid var(--mc-border)", borderRadius: "20px", background: "var(--mc-surface)" }} className="mc-form-grid-split">
+          <div className="mc-card mc-form-grid-split" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", padding: "28px", border: "1.5px solid var(--mc-border)", borderRadius: "20px", background: "var(--mc-surface)" }}>
+
             {/* Progress Rating Slider */}
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "8px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

@@ -139,11 +139,12 @@ export default function Settings() {
                       <textarea className="mc-textarea" rows={3} value={form.bio} onChange={e=>setForm({...form,bio:e.target.value})} placeholder="A short bio about yourself…"/>
                     </label>
                   </div>
-                  <div className="mc-form-actions">
-                    <button className="mc-btn-primary" type="submit" disabled={saving} style={{width:"auto",minWidth:160}}>
+                  <div className="mc-form-actions" style={{ display: "flex", justifyContent: "center", width: "100%", marginTop: "24px" }}>
+                    <button className="mc-btn-primary" type="submit" disabled={saving} style={{ width: "auto", minWidth: 200, margin: "0 auto" }}>
                       {saving ? <><span className="spinner-border spinner-border-sm me-2"/>Saving…</> : <><i className="bi bi-save me-2"/>Save Profile</>}
                     </button>
                   </div>
+
                 </form>
               </div>
             )}
@@ -211,11 +212,12 @@ export default function Settings() {
                       </div>
                     </label>
                   ))}
-                  <div className="mc-form-actions">
-                    <button className="mc-btn-primary" type="submit" disabled={saving} style={{width:"auto",minWidth:180}}>
+                  <div className="mc-form-actions" style={{ display: "flex", justifyContent: "center", width: "100%", marginTop: "24px" }}>
+                    <button className="mc-btn-primary" type="submit" disabled={saving} style={{ width: "auto", minWidth: 200, margin: "0 auto" }}>
                       {saving ? <><span className="spinner-border spinner-border-sm me-2"/>Updating…</> : <><i className="bi bi-lock me-2"/>Change Password</>}
                     </button>
                   </div>
+
                 </form>
               </div>
             )}
