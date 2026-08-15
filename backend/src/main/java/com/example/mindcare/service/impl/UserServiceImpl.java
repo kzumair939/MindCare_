@@ -41,10 +41,15 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setDisplayName(dto.getUsername()); // default display name = username
         user.setAnonymousAlias("Anonymous_" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
-        user.setEnabled(false); // require OTP verification
+        user.setEnabled(true); // enable user account for login
         userRepository.save(user);
-        emailOtpService.sendOtp(user.getEmail());
+        try {
+            emailOtpService.sendOtp(user.getEmail());
+        } catch (Exception e) {
+            // Ignore email error if SMTP not configured in local environment
+        }
     }
+
 
     @Override
     public void processOAuthPostLogin(String email, String name) {

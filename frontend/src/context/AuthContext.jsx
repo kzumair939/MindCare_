@@ -49,14 +49,16 @@ export function AuthProvider({ children }) {
   // ===============================
   // REGISTER
   // ===============================
-  async function register(username, email, password) {
+  async function register(username, email, password, role = "ROLE_USER") {
     const { data } = await api.post("/auth/register", {
       username,
       email,
       password,
+      role,
     });
     return data;
   }
+
 
   // ===============================
   // VERIFY OTP

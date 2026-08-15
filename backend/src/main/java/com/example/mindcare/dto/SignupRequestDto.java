@@ -23,10 +23,15 @@ public class SignupRequestDto {
 
 
     @NotBlank(message = "Password is required")
-    @Size(min = 8,message = "Password must be at least 8 characters long")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     @Pattern(
-            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).*$",
-            message = "Password must contain 1 uppercase, 1 number, 1 special character and be at least 8 characters"
+            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._-]).*$",
+            message = "Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (@#$%^&+=!._-)"
     )
     private String password;
+
+
+
+    private String role;
 }
+

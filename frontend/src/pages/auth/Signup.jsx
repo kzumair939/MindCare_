@@ -80,6 +80,7 @@ export default function Signup() {
                 <label className="mc-field">
                   <span>Username</span>
                   <div className="mc-input-wrap">
+
                     <i className="bi bi-person"/>
                     <input
                       type="text"
@@ -91,6 +92,7 @@ export default function Signup() {
                     />
                   </div>
                 </label>
+
 
                 <label className="mc-field">
                   <span>Email Address</span>
@@ -128,8 +130,15 @@ export default function Signup() {
                       <div className={`mc-strength-fill mc-strength-${strengthClass}`} style={{width: `${strength * 25}%`}}/>
                     </div>
                   )}
-                  {form.password && <div className={`mc-strength-label mc-strength-${strengthClass}`}>{strengthLabel} password</div>}
+                  {form.password ? (
+                    <div className={`mc-strength-label mc-strength-${strengthClass}`}>{strengthLabel} password</div>
+                  ) : (
+                    <div style={{ fontSize: "0.72rem", color: "var(--mc-muted)", marginTop: "4px" }}>
+                      Must be 8+ chars with 1 uppercase, 1 lowercase, 1 number & 1 special character (@#$%^&+=!._-)
+                    </div>
+                  )}
                 </label>
+
 
                 <button className="mc-btn-primary" type="submit" disabled={loading}>
                   {loading

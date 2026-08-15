@@ -26,18 +26,29 @@ public class AdminUserInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (!userRepository.existsByUsername(adminUsername)) {
-            User admin = User.builder()
-                .username(adminUsername)
-                .email(adminEmail)
-                .password(passwordEncoder.encode(adminPassword))
-                .role(Role.ROLE_ADMIN)
-                .displayName("Admin")
-                .freeSessionsUsed(0)
-                .anonymousMode(false)
-                .build();
-            userRepository.save(admin);
-            System.out.println("[MindCare] Admin user created: " + adminUsername);
-        }
+        userRepository.findByUsername(adminUsername).ifPresentOrElse(
+            existingAdmin -> {
+                existingAdmin.setPassword(passwordEncoder.encode(adminPassword));
+                existingAdmin.setRole(Role.ROLE_ADMIN);
+                existingAdmin.setEnabled(true);
+                userRepository.save(existingAdmin);
+                System.out.println("[MindCare] Existing Admin user updated & enabled: " + adminUsername);
+            },
+            () -> {
+                User admin = User.builder()
+                    .username(adminUsername)
+                    .email(adminEmail)
+                    .password(passwordEncoder.encode(adminPassword))
+                    .role(Role.ROLE_ADMIN)
+                    .displayName("Admin")
+                    .enabled(true)
+                    .freeSessionsUsed(0)
+                    .anonymousMode(false)
+                    .build();
+                userRepository.save(admin);
+                System.out.println("[MindCare] Admin user created & enabled: " + adminUsername);
+            }
+        );
     }
+
 }

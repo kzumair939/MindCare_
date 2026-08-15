@@ -56,17 +56,23 @@ public class User {
     // =============================
     // Anonymous & free sessions
     // =============================
+    @Builder.Default
     private boolean anonymousMode = false;
     private String anonymousAlias;
+    @Builder.Default
     private int freeSessionsUsed = 0;
 
     // =============================
     // Account status
     // =============================
+    @Builder.Default
     private boolean enabled = true;
+    @Builder.Default
     private boolean deleted = false;
+    @Builder.Default
     private boolean blocked = false;
     private String profilePicturePath;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

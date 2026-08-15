@@ -14,10 +14,12 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault(); setError(""); setLoading(true);
     try {
-      const user = await login(form.username, form.password);
-      if (user.role === "ROLE_ADMIN") nav("/admin");
-      else if (user.role === "ROLE_THERAPIST") nav("/therapist");
+      const res = await login(form.username, form.password);
+      const role = res?.role || res?.user?.role || "";
+      if (role === "ROLE_ADMIN") nav("/admin");
+      else if (role === "ROLE_THERAPIST") nav("/therapist");
       else nav("/dashboard");
+
     } catch(err) {
       if (err.response?.data?.requiresVerification) {
         const unverifiedEmail = err.response.data.email || "";
