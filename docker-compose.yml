@@ -3,7 +3,7 @@ services:
     image: mysql:8.0
     container_name: mindcare-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: umAIR911@
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-rootpassword123}
       MYSQL_DATABASE: DB_1
     ports:
       - "3307:3306"

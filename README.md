@@ -1,313 +1,226 @@
-# 🧠 MindCare - Mental Health Support Platform
+# 🧠 MindCare — Telehealth & Mental Health Support Platform
 
-A modern full-stack mental health platform built with **React**, **Spring Boot**, **JWT Authentication**, **WebRTC Video Calling**, **WebSockets**, and **Docker**.
-
-MindCare connects users with therapists through secure online sessions, group therapy rooms, real-time messaging, and mental health assessments.
-
----
-
-## ✨ Features
-
-### 👤 User Features
-
-* User Registration & Login
-* JWT Authentication & Authorization
-* Google OAuth2 Login
-* Book Therapy Sessions
-* View Upcoming & Previous Sessions
-* Mental Health Surveys
-* Feedback System
-* Secure Online Video Sessions
-* Settings Management
-* Payment Integration
-
-### 👨‍⚕️ Therapist Features
-
-* Therapist Dashboard
-* Session Management
-* Create Therapy Rooms
-* Group Therapy Management
-* Therapist Reports
-* Real-time Chat Support
-
-### 🛠️ Admin Features
-
-* Admin Dashboard
-* Therapist Management
-* Session Monitoring
-* Platform Analytics
-* User Oversight
-
-### 💬 Real-Time Features
-
-* WebRTC Video Calling
-* WebSocket Messaging
-* Group Chat Rooms
-* Voice Message Uploads
-* File Sharing
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17-orange.svg?style=for-the-badge&logo=openjdk" alt="Java 17" />
+  <img src="https://img.shields.io/badge/Spring_Boot-3.x-6DB33F.svg?style=for-the-badge&logo=springboot" alt="Spring Boot" />
+  <img src="https://img.shields.io/badge/React-18.x-61DAFB.svg?style=for-the-badge&logo=react" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-5.x-646CFF.svg?style=for-the-badge&logo=vite" alt="Vite" />
+  <img src="https://img.shields.io/badge/MySQL-8.0-4479A1.svg?style=for-the-badge&logo=mysql" alt="MySQL" />
+  <img src="https://img.shields.io/badge/Docker-Enabled-2496ED.svg?style=for-the-badge&logo=docker" alt="Docker" />
+  <img src="https://img.shields.io/badge/WebRTC-Realtime-333333.svg?style=for-the-badge&logo=webrtc" alt="WebRTC" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License" />
+</p>
 
 ---
 
-# 🏗️ System Architecture
+## 📌 Overview
+
+**MindCare** is an enterprise-grade full-stack telehealth platform engineered for mental health providers, therapists, and patients. It provides a secure, end-to-end digital therapy environment supporting **real-time WebRTC video calls**, **interactive STOMP/WebSocket group therapy rooms**, **mental health assessments & surveys**, **therapist session booking**, and **role-based portal access** (User, Therapist, Admin).
+
+Built with a modern architecture featuring a **Java 17 / Spring Boot** backend REST API and a high-performance **React + Vite SPA** frontend.
+
+---
+
+## ✨ Key Features
+
+### 👤 Patient Portal
+* **Session Booking & Management**: Browse therapists, select available slots, and manage upcoming/past appointments.
+* **Secure Video Consultation**: High-definition peer-to-peer video sessions powered by WebRTC.
+* **Group Therapy Rooms**: Join moderated group support channels with real-time WebSocket messaging and file attachments.
+* **Mental Health Surveys & Trackers**: Complete clinical surveys with immediate visual score reporting.
+* **Flexible Authentication**: Secure login via JWT or Google OAuth2 integration.
+
+### 🩺 Therapist Portal
+* **Therapist Dashboard**: Track client sessions, daily schedules, and client feedback.
+* **Group Room Creation**: Create and moderate specialized therapy rooms.
+* **Clinical Reporting**: Draft and maintain progress notes and therapy session summaries.
+* **Interactive Messaging**: Real-time direct chat and voice message sharing.
+
+### 🛡️ Admin Portal
+* **Platform Analytics**: Comprehensive dashboard for platform usage, active sessions, and client retention.
+* **Therapist Onboarding & Audit**: Provision therapist accounts, manage credentials, and audit session compliance.
+* **System Governance**: Manage user accounts, survey templates, and security policies.
+
+---
+
+## 🏗️ Architecture & System Topology
 
 ```text
-React + Vite SPA
-        │
-        ▼
-Spring Boot REST API
-        │
-        ▼
-MySQL Database
-        │
-        ▼
-JWT Authentication
-        │
-        ▼
-WebSocket + WebRTC
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          React 18 + Vite SPA                            │
+│                 (AppShell, Auth, WebRTC, WebSocket UI)                  │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     │ HTTPS / WSS / REST
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     Spring Boot 3.x REST API                            │
+│  ┌──────────────────┬────────────────────┬───────────────────────────┐  │
+│  │ Spring Security  │  JWT Token Filter  │ Google OAuth2 Integration │  │
+│  ├──────────────────┼────────────────────┼───────────────────────────┤  │
+│  │  WebSocket Controller │ WebRTC Signalling │ Spring Data JPA Repos   │  │
+│  └──────────────────┴────────────────────┴───────────────────────────┘  │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     │ JDBC / SQL
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         MySQL 8.0 Database                              │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-# 🚀 Technology Stack
+## 🛠️ Technology Stack
 
-## Frontend
-
-* React
-* Vite
-* Axios
-* React Router
-* Context API
-* WebRTC
-* STOMP WebSocket
-
-## Backend
-
-* Spring Boot
-* Spring Security
-* JWT
-* Spring Data JPA
-* MySQL
-* Maven
-
-## DevOps
-
-* Docker
-* Docker Compose
+| Layer | Technologies & Tools |
+| :--- | :--- |
+| **Backend** | Java 17, Spring Boot 3.x, Spring Security, Spring Data JPA, Hibernate, Maven |
+| **Frontend** | React 18, Vite, React Router v6, Axios, Context API, Bootstrap / Custom CSS |
+| **Real-Time Communication** | WebRTC (Peer Connection & Media Streams), STOMP over SockJS / WebSockets |
+| **Authentication** | JSON Web Tokens (JWT), Google OAuth2 |
+| **Database** | MySQL 8.0, Relational Schema with Indexing & JPA Entities |
+| **DevOps & Containerization** | Docker, Docker Compose, Nginx Reverse Proxy |
 
 ---
 
-# 📁 Project Structure
+## 📁 Repository Structure
 
 ```text
-mindcare-spa/
-│
-├── backend/
-│   ├── config/
-│   ├── controller/
-│   ├── security/
-│   ├── entity/
-│   ├── service/
-│   ├── repository/
-│   ├── dto/
-│   └── Enum/
-│
-└── frontend/
-    ├── api/
-    ├── context/
-    ├── components/
-    ├── hooks/
-    ├── pages/
-    ├── styles/
-    └── utils/
+mindcare-platform/
+├── backend/                        # Spring Boot Microservice Source
+│   ├── src/main/java/com/example/mindcare/
+│   │   ├── config/                 # WebSecurity, CORS, WebSocket Config
+│   │   ├── controller/             # REST Endpoints (Auth, Session, Admin, Group)
+│   │   ├── dto/                    # Data Transfer Objects
+│   │   ├── entity/                 # JPA Domain Entities
+│   │   ├── repository/             # Spring Data Repositories
+│   │   ├── security/               # JWT Utilities & Authentication Providers
+│   │   └── service/                # Business Logic Implementation
+│   └── src/main/resources/
+│       └── application.properties  # Application Configuration
+├── frontend/                       # React + Vite Single Page Application
+│   ├── src/
+│   │   ├── api/                    # Axios Client & Interceptors
+│   │   ├── components/             # Reusable UI Components & Layouts
+│   │   ├── context/                # Auth & Theme State Providers
+│   │   ├── hooks/                  # Custom React Hooks
+│   │   └── pages/                  # Route Pages (User, Therapist, Admin, Auth)
+│   └── vite.config.js              # Vite Build & Proxy Settings
+├── docker-compose.yml              # Multi-container Orchestration
+├── .env.example                    # Environment Variable Template
+└── README.md                       # Project Documentation
 ```
 
 ---
 
-# 🔐 Authentication Flow
+## 🔑 Environment Configuration
 
-### JWT Authentication
+Copy `.env.example` to `.env` in the root directory before running the application:
 
-1. User logs in.
-2. Backend generates JWT token.
-3. Token is stored in localStorage.
-4. Axios automatically attaches:
-
-```http
-Authorization: Bearer <token>
+```bash
+cp .env.example .env
 ```
 
-5. Unauthorized requests automatically redirect to Login.
+| Variable | Description | Default / Example Value |
+| :--- | :--- | :--- |
+| `DB_PASSWORD` | MySQL root database password | `your_secure_db_password` |
+| `JWT_SECRET` | Secret key used for signing JWT tokens | `your_jwt_secret_key_32_chars_min` |
+| `GOOGLE_CLIENT_ID` | Google OAuth2 Client ID | `your_google_client_id.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth2 Client Secret | `your_google_client_secret` |
+| `EMAIL_USERNAME` | SMTP email username for sending OTPs | `your-email@gmail.com` |
+| `EMAIL_PASSWORD` | SMTP email app password | `your-google-app-password` |
+| `CORS_ALLOWED_ORIGINS` | Allowed origins for cross-origin requests | `http://localhost:5173,http://localhost:8080` |
 
 ---
 
-### Google OAuth2 Login
+## 🚀 Quick Start Guide
 
-```text
-Frontend
-   ↓
-Google Authentication
-   ↓
-Spring Security OAuth2
-   ↓
-JWT Generation
-   ↓
-React Dashboard
+### Prerequisites
+* **Java 17+** JDK installed
+* **Node.js 18+** & **npm**
+* **Maven 3.8+**
+* **Docker Desktop** (optional for containerized deployment)
+
+---
+
+### Option A: Running via Docker Compose (Recommended)
+
+Run the full stack (Frontend + Backend + MySQL Database) with a single command:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/mindcare-platform.git
+cd mindcare-platform
+
+# 2. Setup your environment variables
+cp .env.example .env
+
+# 3. Launch with Docker Compose
+docker-compose up --build -d
 ```
 
----
-
-# ⚙️ Running Locally
-
-## Prerequisites
-
-* Java 17+
-* Maven 3+
-* Node.js 18+
-* MySQL
-* Docker (Optional)
+* **Frontend Application**: `http://localhost:8080`
+* **Backend REST API**: Proxy-matched via `http://localhost:8080/api`
 
 ---
 
-## Backend Setup
+### Option B: Local Manual Setup
+
+#### 1. Backend Service (Spring Boot)
 
 ```bash
 cd backend
+
+# Build and package application
+mvn clean install
+
+# Launch Spring Boot application
 mvn spring-boot:run
 ```
+> The API server will start at `http://localhost:8080`.
 
-Backend URL:
-
-```text
-http://localhost:8080
-```
-
----
-
-## Frontend Setup
+#### 2. Frontend Application (React + Vite)
 
 ```bash
 cd frontend
+
+# Install dependencies
 npm install
+
+# Start development server
 npm run dev
 ```
-
-Frontend URL:
-
-```text
-http://localhost:5173
-```
-
-Vite automatically proxies:
-
-```text
-/api
-/ws
-/uploads
-```
-
-to:
-
-```text
-http://localhost:8080
-```
+> The React dev server will start at `http://localhost:5173` with automatic API proxying to `localhost:8080`.
 
 ---
 
-# 🐳 Docker Setup
+## 📡 API Overview
 
-Run the complete application:
-
-```bash
-docker-compose up --build
-```
-
-Access:
-
-Frontend:
-
-```text
-http://localhost:5173
-```
-
-Backend:
-
-```text
-http://localhost:8080
-```
+| HTTP Method | Endpoint Path | Access Level | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Public | Register new patient account |
+| `POST` | `/api/auth/login` | Public | Authenticate user and return JWT |
+| `GET` | `/api/auth/me` | Authenticated | Retrieve current user profile |
+| `POST` | `/api/auth/verify-otp` | Public | Verify 6-digit OTP code |
+| `GET` | `/api/session/my` | Patient | Get patient's session history |
+| `POST` | `/api/session/book` | Patient | Book session with therapist |
+| `GET` | `/api/session/therapist` | Therapist | Get therapist's scheduled sessions |
+| `GET` | `/api/group/rooms` | Authenticated | List available group therapy rooms |
+| `POST` | `/api/group/create` | Therapist | Create a new group room |
+| `POST` | `/api/group/{id}/send` | Authenticated | Send real-time chat message |
+| `GET` | `/api/admin/stats` | Admin | Fetch system analytics & metrics |
+| `POST` | `/api/admin/therapists` | Admin | Onboard and provision a therapist |
 
 ---
 
-# 📡 API Overview
+## 🛡️ Security Architecture
 
-| Method | Endpoint               | Access           |
-| ------ | ---------------------- | ---------------- |
-| POST   | /api/auth/login        | Public           |
-| POST   | /api/auth/register     | Public           |
-| GET    | /api/auth/me           | Authenticated    |
-| GET    | /api/session/my        | User             |
-| POST   | /api/session/book      | User             |
-| GET    | /api/session/therapist | Therapist        |
-| GET    | /api/group/rooms       | User / Therapist |
-| POST   | /api/group/create      | Therapist        |
-| POST   | /api/group/join        | User             |
-| POST   | /api/group/{id}/send   | User / Therapist |
-| POST   | /api/group/{id}/upload | User / Therapist |
-| GET    | /api/admin/stats       | Admin            |
-| GET    | /api/therapist/all     | Authenticated    |
+* **Stateless JWT Authentication**: Passwords hashed using BCrypt. JWT tokens issued upon successful authentication and verified on protected API routes.
+* **Role-Based Access Control (RBAC)**: Fine-grained security protecting `USER`, `THERAPIST`, and `ADMIN` endpoints.
+* **CORS Protection**: Origin validation restricting unauthorized cross-origin API calls.
+* **Data Protection**: Zero hardcoded production secrets. All credentials managed securely via environment variables.
 
 ---
 
-# 👨‍💻 Default Admin Account
+## 📜 License
 
-```text
-Username: admin
-Password: admin123
-```
-
-
----
-
-# 📸 Screenshots
-
-Add screenshots here:
-
-```text
-docs/screenshots/dashboard.png
-docs/screenshots/video-session.png
-docs/screenshots/group-chat.png
-```
-
----
-
-# 🔒 Security Features
-
-* JWT Authentication
-* Role-Based Authorization
-* Spring Security
-* Protected Routes
-* OAuth2 Login
-* CORS Configuration
-* Secure API Access
-
----
-
-# 📈 Future Improvements
-
-* AI-Based Mental Health Analysis
-* Appointment Reminders
-* Email Notifications
-* Mobile Application
-* Video Session Recording
-* Payment Gateway Integration
-
----
-
-# 👥 Contributors
-
-Developed as a full-stack mental health support platform using React and Spring Boot.
-
----
-
-## ⭐ Support
-
-If you find this project useful, consider giving it a star on GitHub.
+Distributed under the **MIT License**.
