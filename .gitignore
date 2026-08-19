@@ -16,6 +16,8 @@ frontend/.eslintcache
 # OS-specific files
 Thumbs.db
 .DS_Store
+*.log
+
 
 # IDE directories
 .idea/
