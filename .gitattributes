@@ -1,9 +1,7 @@
 # GitHub Linguist Overrides
-# Ignore frontend JavaScript, JSX, CSS, and HTML from repository language stats
-# so GitHub recognizes and displays Java as the primary language.
+# Exclude heavy page views and styling from language stats to achieve a target balance:
+# ~73% Java (Backend) and ~27% JavaScript (Frontend)
 
-frontend/** linguist-detectable=false
-*.js linguist-detectable=false
-*.jsx linguist-detectable=false
 *.css linguist-detectable=false
 *.html linguist-detectable=false
+frontend/src/pages/** linguist-detectable=false
