@@ -23,6 +23,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final EmailOtpService emailOtpService;
 
     @Override
+    @Transactional
     public void registerUser(SignupRequestDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new BadRequestException("This email is already registered");
@@ -41,7 +43,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setDisplayName(dto.getUsername()); // default display name = username
         user.setAnonymousAlias("Anonymous_" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
-        user.setEnabled(true); // enable user account for login
+        user.setEnabled(false); // requires email OTP verification before login
         userRepository.save(user);
         try {
             emailOtpService.sendOtp(user.getEmail());
@@ -52,15 +54,21 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public void processOAuthPostLogin(String email, String name) {
         Optional<User> existUser = userRepository.findByEmail(email);
         if (existUser.isEmpty()) {
             String base = email.split("@")[0];
+            String username = base;
+            if (userRepository.existsByUsername(username)) {
+                username = base + "_" + UUID.randomUUID().toString().substring(0, 6);
+            }
             User newUser = new User();
             newUser.setEmail(email);
-            newUser.setUsername(base);
+            newUser.setUsername(username);
             newUser.setDisplayName(name != null ? name : base);
             newUser.setRole(Role.ROLE_USER);
+            newUser.setEnabled(true);
             newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
             newUser.setAnonymousAlias("Anonymous_" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
             userRepository.save(newUser);
@@ -80,6 +88,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     @Caching(evict = {
         @CacheEvict(value = "userByIdentifier", key = "#identifier"),
         @CacheEvict(value = "userDetails", key = "#identifier")
@@ -103,6 +112,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     @Caching(evict = {
         @CacheEvict(value = "userByIdentifier", key = "#identifier"),
         @CacheEvict(value = "userDetails", key = "#identifier")
@@ -115,6 +125,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     @Caching(evict = {
         @CacheEvict(value = "userByIdentifier", key = "#identifier"),
         @CacheEvict(value = "userDetails", key = "#identifier")

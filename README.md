@@ -57,7 +57,7 @@ Built with a modern architecture featuring a **Java 17 / Spring Boot** backend R
 │  ┌──────────────────┬────────────────────┬───────────────────────────┐  │
 │  │ Spring Security  │  JWT Token Filter  │ Google OAuth2 Integration │  │
 │  ├──────────────────┼────────────────────┼───────────────────────────┤  │
-│  │  WebSocket Controller │ WebRTC Signalling │ Spring Data JPA Repos   │  │
+│  │  WebSocket Controller │ WebRTC Signalling │ Spring Data JPA Repos    │  │
 │  └──────────────────┴────────────────────┴───────────────────────────┘  │
 └────────────────────────────────────┬────────────────────────────────────┘
                                      │ JDBC / SQL

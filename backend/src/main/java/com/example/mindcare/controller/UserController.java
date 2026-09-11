@@ -50,8 +50,8 @@ public class UserController {
         if (!passwordEncoder.matches(currentPw, user.getPassword())) {
             return ResponseEntity.status(400).body(Map.of("error", "Current password is incorrect"));
         }
-        if (newPw == null || newPw.length() < 8) {
-            return ResponseEntity.status(400).body(Map.of("error", "New password must be at least 8 characters"));
+        if (newPw == null || !com.example.mindcare.validation.PasswordStrengthValidator.isStrong(newPw)) {
+            return ResponseEntity.status(400).body(Map.of("error", "Password must be at least 8 characters long, contain at least 1 uppercase letter, 1 number, and 1 special character (@#$!)"));
         }
         user.setPassword(passwordEncoder.encode(newPw));
         userRepository.save(user);
@@ -63,20 +63,27 @@ public class UserController {
         User user = userService.findByIdentifier(auth.getName())
             .orElseThrow(() -> new BadRequestException("User not found"));
         try {
-            String uploadDir = System.getProperty("user.dir") + "/uploads/profile-pictures/";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) dir.mkdirs();
-            String ext = "";
             String origName = profilePicture.getOriginalFilename();
+            String ext = "";
             if (origName != null && origName.contains(".")) {
-                ext = origName.substring(origName.lastIndexOf("."));
+                ext = origName.substring(origName.lastIndexOf(".")).toLowerCase();
             }
+            java.util.Set<String> allowed = java.util.Set.of(".jpg", ".jpeg", ".png", ".webp");
+            if (!allowed.contains(ext)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Only image files (.jpg, .jpeg, .png, .webp) are allowed"));
+            }
+
+            Path uploadDir = Paths.get("uploads/profile-pictures");
+            Files.createDirectories(uploadDir);
+
             String fileName = "user_" + user.getId() + "_" + UUID.randomUUID().toString().substring(0,8) + ext;
-            Path dest = Paths.get(uploadDir + fileName);
+            Path dest = uploadDir.resolve(fileName);
             Files.write(dest, profilePicture.getBytes());
-            user.setProfilePicturePath(uploadDir + fileName);
+
+            String webPath = "/uploads/profile-pictures/" + fileName;
+            user.setProfilePicturePath(webPath);
             userRepository.save(user);
-            return ResponseEntity.ok(Map.of("path", uploadDir + fileName, "message", "Profile picture uploaded"));
+            return ResponseEntity.ok(Map.of("path", webPath, "message", "Profile picture uploaded"));
         } catch (IOException e) {
             return ResponseEntity.status(500).body(Map.of("error", "Failed to upload picture"));
         }

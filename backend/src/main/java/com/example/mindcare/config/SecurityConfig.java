@@ -34,6 +34,7 @@ public class SecurityConfig {
     private final CustomUserDetailService userDetailService;
     private final UserRepository userRepository;
     private final JwtAuthFilter jwtAuthFilter;
+    private final com.example.mindcare.security.RateLimitFilter rateLimitFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
@@ -77,15 +78,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // CSRF is disabled because authentication is stateless JWT via Authorization Bearer headers
             .csrf(c -> c.disable())
             .cors(c -> {})
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(ct -> {})
+            )
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authenticationProvider(daoAuthenticationProvider())
             .authorizeHttpRequests(auth -> auth
                 // Public
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/uploads/profile-pictures/**").permitAll()
+                .requestMatchers("/uploads/**").authenticated()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/login/**", "/oauth2/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -100,13 +107,19 @@ public class SecurityConfig {
                 // Therapist portal
                 .requestMatchers("/api/therapist/**").hasAnyAuthority("ROLE_THERAPIST","ROLE_ADMIN")
 
-                // Group & session — all authenticated users
+                // Group, session, survey, user — all authenticated users
                 .requestMatchers("/api/group/**").authenticated()
                 .requestMatchers("/api/session/**").authenticated()
                 .requestMatchers("/api/user/**").authenticated()
+                .requestMatchers("/api/survey/**").authenticated()
 
                 .anyRequest().authenticated()
             )
+            .exceptionHandling(e -> e.defaultAuthenticationEntryPointFor(
+                new org.springframework.security.web.authentication.HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED),
+                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/**")
+            ))
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .oauth2Login(oauth2 -> oauth2
                 .userInfoEndpoint(userInfo ->

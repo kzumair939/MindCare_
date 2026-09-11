@@ -23,6 +23,8 @@ public class SurveyServiceImpl implements SurveyService {
 
     private final SurveyResultRepository surveyResultRepository;
     private final UserRepository userRepository;
+    private final com.example.mindcare.service.AiTherapyAdvisorService aiTherapyAdvisorService;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @Override
     @Cacheable(value = "surveyResult", key = "#identifier")
@@ -40,7 +42,7 @@ public class SurveyServiceImpl implements SurveyService {
     public SurveyResult saveForUser(String identifier, SurveyFormDto form) {
         User user = findUser(identifier);
 
-        // Normalize nulls to 0
+        // Normalize answers 1-5
         int q1 = n(form.getQ1());
         int q2 = n(form.getQ2());
         int q3 = n(form.getQ3());
@@ -52,31 +54,23 @@ public class SurveyServiceImpl implements SurveyService {
         int q9 = n(form.getQ9());
         int q10 = n(form.getQ10());
 
-        // Crisis detection (Q9)
-        boolean crisis = q9 >= 2;
+        // Run AI / Gemini analysis for clinically tailored recommendation
+        com.example.mindcare.dto.AiTherapyRecommendationDto aiRec = aiTherapyAdvisorService.analyzeSurveyAndRecommend(form);
 
-        // Simple screening scoring (not diagnostic)
-        int anxiety = q1 + q2 + q6;
-        int depression = q3 + q4 + q10;
-        int trauma = q7 + q8;
-        int sleep = q5;
-        int adhdLike = q6;
-        int relationship = q10;
+        String category = (aiRec != null && aiRec.getCategory() != null) ? aiRec.getCategory() : "General Wellbeing";
+        TherapyType therapy = (aiRec != null && aiRec.getRecommendedTherapy() != null) ? aiRec.getRecommendedTherapy() : TherapyType.GENERAL_COUNSELLING;
+        boolean crisis = (aiRec != null) ? aiRec.isCrisisFlag() : (q9 >= 2 || q10 >= 5);
+        String aiAnalysis = (aiRec != null) ? aiRec.getAiAnalysis() : "";
+        Integer stressScore = (aiRec != null) ? aiRec.getStressScore() : 75;
 
-        Map<String, Integer> scores = new LinkedHashMap<>();
-        scores.put("Anxiety / Worry", anxiety);
-        scores.put("Low Mood / Depression", depression);
-        scores.put("Trauma / High stress reactions", trauma);
-        scores.put("Sleep difficulty", sleep);
-        scores.put("Attention / Overwhelm", adhdLike);
-        scores.put("Relationship / Social stress", relationship);
-
-        String topCategory = scores.entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse("General wellbeing");
-
-        TherapyType therapy = recommendTherapy(topCategory, crisis);
+        String actionPlanJson = "";
+        if (aiRec != null && aiRec.getActionPlan() != null) {
+            try {
+                actionPlanJson = objectMapper.writeValueAsString(aiRec.getActionPlan());
+            } catch (Exception e) {
+                actionPlanJson = "[]";
+            }
+        }
 
         SurveyResult existing = surveyResultRepository.findByUser_Id(user.getId()).orElse(null);
         LocalDateTime now = LocalDateTime.now();
@@ -92,9 +86,12 @@ public class SurveyServiceImpl implements SurveyService {
         toSave.setQ8(q8);
         toSave.setQ9(q9);
         toSave.setQ10(q10);
-        toSave.setCategory(topCategory);
+        toSave.setCategory(category);
         toSave.setRecommendedTherapy(therapy);
         toSave.setCrisisFlag(crisis);
+        toSave.setAiAnalysis(aiAnalysis);
+        toSave.setActionPlan(actionPlanJson);
+        toSave.setStressScore(stressScore);
         if (toSave.getCreatedAt() == null) toSave.setCreatedAt(now);
         toSave.setUpdatedAt(now);
 
@@ -102,7 +99,51 @@ public class SurveyServiceImpl implements SurveyService {
 
         // Store summary on User for easy dashboard access
         user.setSurveyCompletedAt(now);
-        user.setSurveyCategory(topCategory);
+        user.setSurveyCategory(category);
+        user.setRecommendedTherapy(therapy);
+        user.setCrisisFlag(crisis);
+        userRepository.save(user);
+
+        return saved;
+    }
+
+    @Override
+    @CachePut(value = "surveyResult", key = "#identifier")
+    public SurveyResult saveInteractiveResultForUser(String identifier, com.example.mindcare.dto.AiTherapyRecommendationDto aiRec) {
+        User user = findUser(identifier);
+
+        String category = (aiRec != null && aiRec.getCategory() != null) ? aiRec.getCategory() : "General Wellbeing";
+        TherapyType therapy = (aiRec != null && aiRec.getRecommendedTherapy() != null) ? aiRec.getRecommendedTherapy() : TherapyType.GENERAL_COUNSELLING;
+        boolean crisis = (aiRec != null) && aiRec.isCrisisFlag();
+        String aiAnalysis = (aiRec != null) ? aiRec.getAiAnalysis() : "";
+        Integer stressScore = (aiRec != null && aiRec.getStressScore() != null) ? aiRec.getStressScore() : 75;
+
+        String actionPlanJson = "";
+        if (aiRec != null && aiRec.getActionPlan() != null) {
+            try {
+                actionPlanJson = objectMapper.writeValueAsString(aiRec.getActionPlan());
+            } catch (Exception e) {
+                actionPlanJson = "[]";
+            }
+        }
+
+        SurveyResult existing = surveyResultRepository.findByUser_Id(user.getId()).orElse(null);
+        LocalDateTime now = LocalDateTime.now();
+        SurveyResult toSave = (existing != null) ? existing : new SurveyResult();
+        toSave.setUser(user);
+        toSave.setCategory(category);
+        toSave.setRecommendedTherapy(therapy);
+        toSave.setCrisisFlag(crisis);
+        toSave.setAiAnalysis(aiAnalysis);
+        toSave.setActionPlan(actionPlanJson);
+        toSave.setStressScore(stressScore);
+        if (toSave.getCreatedAt() == null) toSave.setCreatedAt(now);
+        toSave.setUpdatedAt(now);
+
+        SurveyResult saved = surveyResultRepository.save(toSave);
+
+        user.setSurveyCompletedAt(now);
+        user.setSurveyCategory(category);
         user.setRecommendedTherapy(therapy);
         user.setCrisisFlag(crisis);
         userRepository.save(user);

@@ -44,6 +44,15 @@ public class SurveyResult {
 
     private boolean crisisFlag;
 
+    @Column(columnDefinition = "TEXT")
+    private String aiAnalysis;
+
+    @Column(columnDefinition = "TEXT")
+    private String actionPlan;
+
+    private Integer stressScore;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
+

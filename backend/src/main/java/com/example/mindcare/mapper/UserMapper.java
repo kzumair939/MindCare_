@@ -7,17 +7,9 @@ import com.example.mindcare.entity.User;
 public class UserMapper {
 
     public static User toEntity(SignupRequestDto dto) {
+        // Enforce least privilege: public self-registration always assigns ROLE_USER.
+        // Administrative and Therapist accounts cannot be self-assigned via registration DTO.
         Role role = Role.ROLE_USER;
-        if (dto.getRole() != null) {
-            String r = dto.getRole().toUpperCase().trim();
-            if (r.contains("ADMIN")) {
-                role = Role.ROLE_ADMIN;
-            } else if (r.contains("THERAPIST")) {
-                role = Role.ROLE_THERAPIST;
-            } else {
-                role = Role.ROLE_USER;
-            }
-        }
 
         return User.builder()
                 .username(dto.getUsername())

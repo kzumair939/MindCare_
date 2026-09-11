@@ -54,6 +54,7 @@ public class SessionReportRevision {
     @Column(length = 2000)
     private String clientSummary;
 
+    @Convert(converter = com.example.mindcare.security.AesDataEncryptorConverter.class)
     @Column(length = 4000)
     private String privateNotes;
 

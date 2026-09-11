@@ -45,6 +45,17 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public void markRead(Long notificationId, String username) {
+        notificationRepository.findById(notificationId).ifPresent(n -> {
+            if (n.getUser() != null &&
+                (username.equals(n.getUser().getUsername()) || username.equals(n.getUser().getEmail()))) {
+                n.setRead(true);
+                notificationRepository.save(n);
+            }
+        });
+    }
+
+    @Override
     public long countUnread(User user) {
         return notificationRepository.countByUserAndReadFalse(user);
     }

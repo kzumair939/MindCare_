@@ -12,12 +12,14 @@ import com.example.mindcare.repository.UserRepository;
 import com.example.mindcare.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
@@ -25,13 +27,18 @@ public class PaymentServiceImpl implements PaymentService {
     private final UserRepository userRepository;
 
     @Override
-    public Payment processPayment(String identifier, PaymentDto dto) {
+    public synchronized Payment processPayment(String identifier, PaymentDto dto) {
         User user = userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByUsername(identifier))
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         Session session = sessionRepository.findById(dto.getSessionId())
                 .orElseThrow(() -> new NotFoundException("Session not found"));
+
+        // Enforce ownership: Only the patient assigned to this session can process payment
+        if (session.getUser() == null || !session.getUser().getId().equals(user.getId())) {
+            throw new BadRequestException("You are not authorized to process payment for this session");
+        }
 
         // Check if already paid
         if (paymentRepository.findBySessionId(dto.getSessionId()).isPresent()) {
@@ -55,7 +62,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment processFreeSession(String identifier, Long sessionId) {
+    public synchronized Payment processFreeSession(String identifier, Long sessionId) {
         User user = userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByUsername(identifier))
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -66,6 +73,15 @@ public class PaymentServiceImpl implements PaymentService {
 
         Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NotFoundException("Session not found"));
+
+        // Enforce ownership: Only the patient assigned to this session can apply free session credits
+        if (session.getUser() == null || !session.getUser().getId().equals(user.getId())) {
+            throw new BadRequestException("You are not authorized to apply free session credits to this session");
+        }
+
+        if (paymentRepository.findBySessionId(sessionId).isPresent()) {
+            throw new BadRequestException("Session already has payment registered");
+        }
 
         user.setFreeSessionsUsed(user.getFreeSessionsUsed() + 1);
         userRepository.save(user);
@@ -84,6 +100,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Payment> getUserPayments(String identifier) {
         User user = userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByUsername(identifier))
@@ -92,6 +109,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean sessionNeedsPayment(String identifier, Long sessionId) {
         return paymentRepository.findBySessionId(sessionId).isEmpty();
     }

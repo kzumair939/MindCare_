@@ -38,6 +38,9 @@ export function AuthProvider({ children }) {
     });
 
     localStorage.setItem("mc_token", data.token);
+    if (data.refreshToken) {
+      localStorage.setItem("mc_refresh_token", data.refreshToken);
+    }
 
     // always fetch real user from backend
     const userRes = await api.get("/auth/me");
@@ -70,6 +73,9 @@ export function AuthProvider({ children }) {
     });
 
     localStorage.setItem("mc_token", data.token);
+    if (data.refreshToken) {
+      localStorage.setItem("mc_refresh_token", data.refreshToken);
+    }
 
     const userRes = await api.get("/auth/me");
     setUser(userRes.data);
@@ -91,7 +97,12 @@ export function AuthProvider({ children }) {
   // LOGOUT
   // ===============================
   function logout() {
+    const rt = localStorage.getItem("mc_refresh_token");
+    if (rt) {
+      api.post("/auth/logout", { refreshToken: rt }).catch(() => {});
+    }
     localStorage.removeItem("mc_token");
+    localStorage.removeItem("mc_refresh_token");
     localStorage.removeItem("mc_user");
     setUser(null);
     window.location.href = "/login";

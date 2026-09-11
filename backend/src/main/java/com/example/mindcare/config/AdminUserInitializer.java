@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class AdminUserInitializer implements ApplicationRunner {
 
     private final UserRepository userRepository;
@@ -28,11 +29,10 @@ public class AdminUserInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         userRepository.findByUsername(adminUsername).ifPresentOrElse(
             existingAdmin -> {
-                existingAdmin.setPassword(passwordEncoder.encode(adminPassword));
-                existingAdmin.setRole(Role.ROLE_ADMIN);
                 existingAdmin.setEnabled(true);
+                existingAdmin.setPassword(passwordEncoder.encode(adminPassword));
                 userRepository.save(existingAdmin);
-                System.out.println("[MindCare] Existing Admin user updated & enabled: " + adminUsername);
+                log.info("[MindCare] Existing Admin user verified and refreshed: {}", adminUsername);
             },
             () -> {
                 User admin = User.builder()

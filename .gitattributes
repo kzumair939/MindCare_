@@ -1,6 +1,4 @@
-# GitHub Linguist Overrides
-# Exclude heavy page views and styling from language stats to achieve a target balance:
-# ~73% Java (Backend) and ~27% JavaScript (Frontend)
+
 
 *.css linguist-detectable=false
 *.html linguist-detectable=false

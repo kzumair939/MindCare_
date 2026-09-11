@@ -18,7 +18,6 @@ Thumbs.db
 .DS_Store
 *.log
 
-
 # IDE directories
 .idea/
 .vscode/

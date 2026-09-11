@@ -187,7 +187,12 @@ public class GroupRestController {
         if (!groupService.isMember(roomId, auth.getName())) return ResponseEntity.status(403).body(Map.of("error","Not a member"));
         try {
             String orig = file.getOriginalFilename() != null ? file.getOriginalFilename() : "file";
-            String ext  = orig.contains(".") ? orig.substring(orig.lastIndexOf(".")) : "";
+            String ext  = orig.contains(".") ? orig.substring(orig.lastIndexOf(".")).toLowerCase() : "";
+            Set<String> allowedExtensions = Set.of(".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".mp4", ".webm", ".mp3", ".wav", ".m4a", ".ogg");
+            if (!allowedExtensions.contains(ext)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid or unsupported file type. Allowed: " + allowedExtensions));
+            }
+
             String stored = UUID.randomUUID() + ext;
             Path dir = Paths.get("uploads/group-files");
             Files.createDirectories(dir);
@@ -291,10 +296,17 @@ public class GroupRestController {
         map.put("anonymous", m.isAnonymous());
         map.put("senderName", m.isAnonymous() ? m.getAnonymousAlias()
             : (m.getSender() != null ? (m.getSender().getDisplayName() != null ? m.getSender().getDisplayName() : m.getSender().getUsername()) : "?"));
-        // Always include the real username so the client can determine `mine` locally
-        map.put("senderUsername", m.getSender() != null ? m.getSender().getUsername() : null);
+        
+        boolean isMine = me != null && m.getSender() != null && m.getSender().getId().equals(me.getId());
+        boolean isAdmin = me != null && me.getRole() != null && me.getRole().name().equals("ROLE_ADMIN");
+        if (m.isAnonymous() && !isMine && !isAdmin) {
+            map.put("senderUsername", null);
+        } else {
+            map.put("senderUsername", m.getSender() != null ? m.getSender().getUsername() : null);
+        }
+
         map.put("sentAt", m.getSentAt() != null ? m.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null);
-        map.put("mine", m.getSender() != null && m.getSender().getId().equals(me.getId()));
+        map.put("mine", isMine);
         map.put("edited", m.isEdited());
         map.put("deleted", m.isDeleted());
         return map;

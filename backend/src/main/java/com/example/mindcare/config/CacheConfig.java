@@ -26,14 +26,14 @@ public class CacheConfig {
     @Bean
     public CacheManager cacheManager() {
         List<CaffeineCache> caches = List.of(
-            build("therapists",        10, TimeUnit.MINUTES, 200),
-            build("activeTherapists",  10, TimeUnit.MINUTES, 200),
-            build("therapistById",     10, TimeUnit.MINUTES, 200),
-            build("userDetails",        5, TimeUnit.MINUTES, 500),
-            build("userByIdentifier",   5, TimeUnit.MINUTES, 500),
-            build("surveyResult",      30, TimeUnit.MINUTES, 500),
-            build("activeGroups",       2, TimeUnit.MINUTES,  50),
-            build("analyticsData",      3, TimeUnit.MINUTES,  10)
+            build("therapists",        10, TimeUnit.MINUTES, 2000),
+            build("activeTherapists",  10, TimeUnit.MINUTES, 2000),
+            build("therapistById",     10, TimeUnit.MINUTES, 2000),
+            build("userDetails",        5, TimeUnit.MINUTES, 15000),
+            build("userByIdentifier",   5, TimeUnit.MINUTES, 15000),
+            build("surveyResult",      30, TimeUnit.MINUTES, 10000),
+            build("activeGroups",       2, TimeUnit.MINUTES,  1000),
+            build("analyticsData",      3, TimeUnit.MINUTES,  100)
         );
 
         SimpleCacheManager manager = new SimpleCacheManager();

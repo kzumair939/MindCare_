@@ -16,6 +16,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
@@ -34,6 +35,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class TherapistServiceImpl implements TherapistService {
 
     private final TherapistRepository therapistRepository;
@@ -136,6 +138,7 @@ public class TherapistServiceImpl implements TherapistService {
     // =========================
 
     @Override
+    @Transactional
     @Caching(evict = {
         @CacheEvict(value = "therapists", allEntries = true),
         @CacheEvict(value = "activeTherapists", allEntries = true)
@@ -147,6 +150,7 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Transactional
     @Caching(evict = {
         @CacheEvict(value = "therapists", allEntries = true),
         @CacheEvict(value = "activeTherapists", allEntries = true),
@@ -172,6 +176,7 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Transactional
     @CacheEvict(value = "therapistById", key = "#therapistId")
     public void verifyTherapist(Long therapistId, boolean verified) {
         Therapist t = therapistRepository.findById(therapistId)
@@ -182,6 +187,7 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Transactional
     public void uploadQualification(String therapistUsername, MultipartFile file) {
         Therapist therapist = therapistRepository.findByUserAccount_Username(therapistUsername)
                 .orElseThrow(() -> new NotFoundException("Therapist not found"));
@@ -190,11 +196,17 @@ public class TherapistServiceImpl implements TherapistService {
             throw new BadRequestException("Please choose a file");
         }
 
+        String original = file.getOriginalFilename() == null ? "qualifications" : file.getOriginalFilename();
+        String ext = original.contains(".") ? original.substring(original.lastIndexOf(".")).toLowerCase() : "";
+        java.util.Set<String> allowedExtensions = java.util.Set.of(".pdf", ".jpg", ".jpeg", ".png");
+        if (!allowedExtensions.contains(ext)) {
+            throw new BadRequestException("Invalid file type. Only PDF and image files (.pdf, .jpg, .jpeg, .png) are permitted.");
+        }
+
         try {
             Path uploadDir = Paths.get("uploads");
             if (!Files.exists(uploadDir)) Files.createDirectories(uploadDir);
 
-            String original = file.getOriginalFilename() == null ? "qualifications" : file.getOriginalFilename();
             String safe = original.replaceAll("[^a-zA-Z0-9._-]", "_");
             String name = UUID.randomUUID() + "_" + safe;
             Path target = uploadDir.resolve(name);
@@ -209,6 +221,7 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Transactional
     @Caching(evict = {
         @CacheEvict(value = "therapists", allEntries = true),
         @CacheEvict(value = "activeTherapists", allEntries = true),
@@ -222,6 +235,7 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Transactional
     @Caching(evict = {
         @CacheEvict(value = "therapists", allEntries = true),
         @CacheEvict(value = "activeTherapists", allEntries = true),
@@ -246,6 +260,7 @@ public class TherapistServiceImpl implements TherapistService {
     // =========================
 
     @Override
+    @Transactional
     public void createTherapistAccount(Long therapistId, String username, String password) {
 
         if (username == null || username.isBlank()) {
@@ -282,6 +297,7 @@ public class TherapistServiceImpl implements TherapistService {
     }
 
     @Override
+    @Transactional
     public void uploadProfilePicture(Long therapistId, MultipartFile file) {
         Therapist therapist = therapistRepository.findById(therapistId)
                 .orElseThrow(() -> new NotFoundException("Therapist not found"));

@@ -26,12 +26,12 @@ public class SessionAutoCompletionScheduler {
     @Scheduled(fixedDelay = 60_000)
     public void autoCompleteExpiredSessions() {
 
-        var bookedSessions = sessionRepository.findAllByStatus(AppointmentStatus.BOOKED);
-        if (bookedSessions == null || bookedSessions.isEmpty()) return;
+        var activeSessions = sessionRepository.findAllByStatusIn(java.util.List.of(AppointmentStatus.BOOKED, AppointmentStatus.CONFIRMED));
+        if (activeSessions == null || activeSessions.isEmpty()) return;
 
         LocalDateTime now = LocalDateTime.now();
 
-        for (Session s : bookedSessions) {
+        for (Session s : activeSessions) {
             if (s.getSessionDate() == null || s.getSessionTime() == null) continue;
 
             int durationMinutes = (s.getDurationMinutes() != null && s.getDurationMinutes() > 0)

@@ -27,6 +27,7 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final UserService userService;
     private final CustomUserDetailService userDetailsService;
+    private final com.example.mindcare.service.RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> req) {
@@ -46,8 +47,11 @@ public class AuthController {
                     .findByIdentifier(req.get("username"))
                     .orElseThrow();
 
+            com.example.mindcare.entity.RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername());
+
             return ResponseEntity.ok(Map.of(
                     "token", token,
+                    "refreshToken", refreshToken.getToken(),
                     "role", user.getRole().name(),
                     "username", user.getUsername(),
                     "displayName",
@@ -172,37 +176,6 @@ public class AuthController {
         ));
     }
 
-    @PostMapping("/oauth2/token")
-    public ResponseEntity<?> oauth2Token(
-            @RequestBody Map<String, String> req
-    ) {
-
-        String email = req.get("email");
-
-        User user = userService
-                .findByIdentifier(email)
-                .orElse(null);
-
-        if (user == null) {
-
-            return ResponseEntity.status(404)
-                    .body(Map.of("error", "User not found"));
-        }
-
-        String token =
-                jwtUtils.generateTokenFromUsername(user.getUsername());
-
-        return ResponseEntity.ok(Map.of(
-                "token", token,
-                "role", user.getRole().name(),
-                "username", user.getUsername(),
-                "email", user.getEmail(),
-                "displayName",
-                user.getDisplayName() != null
-                        ? user.getDisplayName()
-                        : user.getUsername()
-        ));
-    }
 
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> req) {
@@ -215,8 +188,10 @@ public class AuthController {
             userService.verifyRegistrationOtp(email, otp);
             User user = userService.findByIdentifier(email).orElseThrow();
             String token = jwtUtils.generateTokenFromUsername(user.getUsername());
+            com.example.mindcare.entity.RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername());
             return ResponseEntity.ok(Map.of(
                     "token", token,
+                    "refreshToken", refreshToken.getToken(),
                     "role", user.getRole().name(),
                     "username", user.getUsername(),
                     "email", user.getEmail(),
@@ -239,5 +214,29 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> req) {
+        String rawRefreshToken = req.get("refreshToken");
+        if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Refresh token is required"));
+        }
+        try {
+            Map<String, String> tokens = refreshTokenService.rotateRefreshToken(rawRefreshToken);
+            return ResponseEntity.ok(tokens);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody(required = false) Map<String, String> req, Authentication auth) {
+        if (req != null && req.get("refreshToken") != null) {
+            refreshTokenService.revokeToken(req.get("refreshToken"));
+        } else if (auth != null) {
+            refreshTokenService.revokeAllForUser(auth.getName());
+        }
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 }

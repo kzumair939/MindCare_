@@ -40,12 +40,19 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         // 1. Find or create user
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
+                    String base = email.split("@")[0];
+                    String username = base;
+                    if (userRepository.existsByUsername(username)) {
+                        username = base + "_" + java.util.UUID.randomUUID().toString().substring(0, 6);
+                    }
                     User newUser = new User();
                     newUser.setEmail(email);
-                    newUser.setUsername(email.split("@")[0]);
-                    newUser.setDisplayName(name);
+                    newUser.setUsername(username);
+                    newUser.setDisplayName(name != null ? name : base);
                     newUser.setRole(Role.ROLE_USER);
-                    newUser.setPassword("OAUTH_USER");
+                    newUser.setEnabled(true);
+                    newUser.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(java.util.UUID.randomUUID().toString()));
+                    newUser.setAnonymousAlias("Anonymous_" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase());
                     return userRepository.save(newUser);
                 });
 

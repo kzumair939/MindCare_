@@ -29,8 +29,8 @@ public class NotificationRestController {
     }
 
     @PostMapping("/{id}/read")
-    public ResponseEntity<?> markRead(@PathVariable Long id) {
-        notificationService.markRead(id);
+    public ResponseEntity<?> markRead(@PathVariable Long id, Authentication auth) {
+        notificationService.markRead(id, auth.getName());
         return ResponseEntity.ok(Map.of("message","Marked read"));
     }
 }

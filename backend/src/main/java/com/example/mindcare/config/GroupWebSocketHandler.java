@@ -1,14 +1,16 @@
 package com.example.mindcare.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import com.example.mindcare.security.JwtUtils;
+import com.example.mindcare.service.GroupService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -16,59 +18,78 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Slf4j
-public class GroupWebSocketHandler extends TextWebSocketHandler {
+public class GroupWebSocketHandler extends BaseWebSocketHandler {
 
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    @Lazy
+    private GroupService groupService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Set<WebSocketSession>> groupRooms = new ConcurrentHashMap<>();
 
-    private String getUsernameFromSession(WebSocketSession session) {
-        try {
-            String query = session.getUri().getQuery();
-            if (query != null && query.contains("token=")) {
-                String token = query.split("token=")[1];
-                if (token.contains("&")) {
-                    token = token.split("&")[0];
-                }
-                if (jwtUtils.validateToken(token)) {
-                    return jwtUtils.getUsernameFromToken(token);
-                }
-            }
-        } catch (Exception e) {
-            log.error("Failed to parse username from websocket token", e);
-        }
-        return null;
-    }
-
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws IOException {
-        String path = session.getUri().getPath();
+        String path = session.getUri() != null ? session.getUri().getPath() : null;
         String roomId = getPathId(path, "/ws/group/");
-        if (roomId != null) {
-            String username = getUsernameFromSession(session);
-            if (username != null) {
-                session.getAttributes().put("username", username);
-            }
-            groupRooms.computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet()).add(session);
-            log.info("WebSocket connected to group room {}: {} (User: {})", roomId, session.getId(), username);
-            broadcastOnlineCount(roomId);
+
+        if (roomId == null) {
+            session.close(CloseStatus.BAD_DATA);
+            return;
         }
+
+        String username = getUsernameFromSession(session, jwtUtils);
+        if (username == null) {
+            log.warn("Unauthorized WebSocket connection attempt to group room {}: Missing or invalid token", roomId);
+            session.close(CloseStatus.POLICY_VIOLATION);
+            return;
+        }
+
+        Long roomIdLong;
+        try {
+            roomIdLong = Long.parseLong(roomId);
+        } catch (NumberFormatException e) {
+            session.close(CloseStatus.BAD_DATA);
+            return;
+        }
+
+        if (!groupService.isMember(roomIdLong, username)) {
+            log.warn("Forbidden WebSocket access attempt to group room {} by user {}", roomId, username);
+            session.close(CloseStatus.POLICY_VIOLATION);
+            return;
+        }
+
+        session.getAttributes().put("username", username);
+        groupRooms.computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet()).add(session);
+        log.info("WebSocket connected to group room {}: {} (User: {})", roomId, session.getId(), username);
+        broadcastOnlineCount(roomId);
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
-        String path = session.getUri().getPath();
+        String path = session.getUri() != null ? session.getUri().getPath() : null;
         String roomId = getPathId(path, "/ws/group/");
         if (roomId == null) return;
+
+        if (!session.getAttributes().containsKey("username")) {
+            session.close(CloseStatus.POLICY_VIOLATION);
+            return;
+        }
 
         Set<WebSocketSession> room = groupRooms.get(roomId);
         if (room != null) {
             // Forward message (e.g. typing indicators) to all other sessions in the room
             for (WebSocketSession s : room) {
                 if (s.isOpen() && !s.getId().equals(session.getId())) {
-                    s.sendMessage(message);
+                    try {
+                        synchronized (s) {
+                            if (s.isOpen()) {
+                                s.sendMessage(message);
+                            }
+                        }
+                    } catch (Exception ignored) {}
                 }
             }
         }
@@ -76,7 +97,7 @@ public class GroupWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws IOException {
-        String path = session.getUri().getPath();
+        String path = session.getUri() != null ? session.getUri().getPath() : null;
         String roomId = getPathId(path, "/ws/group/");
         if (roomId != null) {
             Set<WebSocketSession> room = groupRooms.get(roomId);
@@ -106,7 +127,12 @@ public class GroupWebSocketHandler extends TextWebSocketHandler {
 
                         Map<String, Object> map = Map.of("type", "MESSAGE", "payload", customizedMsg);
                         String json = objectMapper.writeValueAsString(map);
-                        s.sendMessage(new TextMessage(json));
+                        TextMessage tm = new TextMessage(json);
+                        synchronized (s) {
+                            if (s.isOpen()) {
+                                s.sendMessage(tm);
+                            }
+                        }
                     } catch (Exception e) {
                         log.error("Failed to broadcast group message to session {}: {}", s.getId(), e.getMessage());
                     }
@@ -131,7 +157,12 @@ public class GroupWebSocketHandler extends TextWebSocketHandler {
 
                         Map<String, Object> map = Map.of("type", "MESSAGE_EDITED", "payload", customizedMsg);
                         String json = objectMapper.writeValueAsString(map);
-                        s.sendMessage(new TextMessage(json));
+                        TextMessage tm = new TextMessage(json);
+                        synchronized (s) {
+                            if (s.isOpen()) {
+                                s.sendMessage(tm);
+                            }
+                        }
                     } catch (Exception e) {
                         log.error("Failed to broadcast message edit to session {}: {}", s.getId(), e.getMessage());
                     }
@@ -149,7 +180,12 @@ public class GroupWebSocketHandler extends TextWebSocketHandler {
                     try {
                         Map<String, Object> map = Map.of("type", "MESSAGE_DELETED", "payload", Map.of("id", messageId));
                         String json = objectMapper.writeValueAsString(map);
-                        s.sendMessage(new TextMessage(json));
+                        TextMessage tm = new TextMessage(json);
+                        synchronized (s) {
+                            if (s.isOpen()) {
+                                s.sendMessage(tm);
+                            }
+                        }
                     } catch (Exception e) {
                         log.error("Failed to broadcast message deletion to session {}: {}", s.getId(), e.getMessage());
                     }
@@ -168,7 +204,11 @@ public class GroupWebSocketHandler extends TextWebSocketHandler {
                 TextMessage message = new TextMessage(json);
                 for (WebSocketSession s : room) {
                     if (s.isOpen()) {
-                        s.sendMessage(message);
+                        synchronized (s) {
+                            if (s.isOpen()) {
+                                s.sendMessage(message);
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -186,21 +226,13 @@ public class GroupWebSocketHandler extends TextWebSocketHandler {
         if (room != null) {
             for (WebSocketSession s : room) {
                 if (s.isOpen()) {
-                    s.sendMessage(message);
+                    synchronized (s) {
+                        if (s.isOpen()) {
+                            s.sendMessage(message);
+                        }
+                    }
                 }
             }
         }
-    }
-
-    private String getPathId(String path, String prefix) {
-        if (path.startsWith(prefix)) {
-            String sub = path.substring(prefix.length());
-            int slash = sub.indexOf("/");
-            if (slash != -1) {
-                return sub.substring(0, slash);
-            }
-            return sub;
-        }
-        return null;
     }
 }

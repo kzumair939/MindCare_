@@ -5,13 +5,12 @@ import com.example.mindcare.entity.*;
 import com.example.mindcare.exception.BadRequestException;
 import com.example.mindcare.exception.NotFoundException;
 import com.example.mindcare.repository.*;
+import com.example.mindcare.service.AsyncEmailDispatcher;
 import com.example.mindcare.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class GroupServiceImpl implements GroupService {
 
     private final GroupRoomRepository roomRepository;
@@ -30,7 +30,7 @@ public class GroupServiceImpl implements GroupService {
     private final GroupMemberRepository memberRepository;
     private final GroupInviteRepository inviteRepository;
     private final UserRepository userRepository;
-    private final JavaMailSender mailSender;
+    private final AsyncEmailDispatcher emailDispatcher;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
@@ -52,6 +52,7 @@ public class GroupServiceImpl implements GroupService {
 
     // ─── room creation (therapist only) ────────────────────────
     @Override
+    @Transactional
     @CacheEvict(value = "activeGroups", allEntries = true)
     public GroupRoom createRoom(String therapistIdentifier, GroupRoomDto dto) {
         User user = findUser(therapistIdentifier);
@@ -97,6 +98,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public void addMember(Long roomId, User user) {
         GroupRoom room = getRoom(roomId);
         if (!memberRepository.existsByRoomAndUser(room, user)) {
@@ -148,17 +150,10 @@ public class GroupServiceImpl implements GroupService {
         GroupInvite saved = inviteRepository.save(invite);
 
         String link = baseUrl + "/group/join/invite?token=" + token;
-        try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(invitedEmail);
-            msg.setSubject("You've been invited to a MindCare support group: " + room.getName());
-            msg.setText("Hello,\n\nYou have been invited to join the support group \"" + room.getName()
-                    + "\" on MindCare.\n\nClick the link below to join:\n" + link
-                    + "\n\nThis link expires in 7 days.\n\nTake care,\nThe MindCare Team");
-            mailSender.send(msg);
-        } catch (Exception e) {
-            throw new BadRequestException("Could not send invite email: " + e.getMessage());
-        }
+        String emailBody = "Hello,\n\nYou have been invited to join the support group \"" + room.getName()
+                + "\" on MindCare.\n\nClick the link below to join:\n" + link
+                + "\n\nThis link expires in 7 days.\n\nTake care,\nThe MindCare Team";
+        emailDispatcher.sendSimpleEmailAsync(invitedEmail, "You've been invited to a MindCare support group: " + room.getName(), emailBody);
         return saved;
     }
 
@@ -207,6 +202,7 @@ public class GroupServiceImpl implements GroupService {
 
     // ─── messaging ───────────────────────────────────────────────
     @Override
+    @Transactional
     public GroupMessage sendMessage(Long roomId, String identifier, String content, boolean anonymous) {
         GroupRoom room = getRoom(roomId);
         User user = findUser(identifier);
@@ -266,6 +262,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public void reportMessage(Long messageId, String reason) {
         GroupMessage msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NotFoundException("Message not found"));

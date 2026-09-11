@@ -18,7 +18,11 @@ public class Notification {
 
     private String message;
     private String type;       // SESSION_REMINDER, GROUP_INVITE, etc.
+
+    @Column(name = "is_read")
+    @Builder.Default
     private boolean read = false;
+
     private Long referenceId;  // e.g. session id
 
     private LocalDateTime createdAt;

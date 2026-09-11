@@ -36,6 +36,8 @@ public interface SessionRepository extends JpaRepository<Session,Long> {
 
     List<Session> findAllByStatus(AppointmentStatus status);
 
+    List<Session> findAllByStatusIn(List<AppointmentStatus> statuses);
+
     //get all session for a user
     List<Session> findByUserId(Long userId);
 
