@@ -1032,41 +1032,119 @@ img { max-width:100%; }
    FOOTER
    ========================================================== */
 .mc-footer {
-  background:var(--mc-nav-bg);
-  border-top:1px solid var(--mc-nav-border);
-  color:rgba(255,255,255,.65);
-  margin-top:auto;
+  background: var(--mc-surface);
+  border-top: 1px solid var(--mc-border);
+  color: var(--mc-text-2);
+  margin-top: auto;
+  transition: background var(--mc-anim), border-color var(--mc-anim);
 }
 .mc-footer-inner {
-  max-width:1100px; margin:0 auto; padding:48px 24px 32px;
-  display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 24px 32px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 40px;
 }
 .mc-footer-brand .mc-footer-logo {
-  font-size:1.1rem; font-weight:800; color:#fff;
-  display:flex; align-items:center; gap:8px; margin-bottom:12px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--mc-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
 }
-.mc-footer-brand .mc-footer-logo .bi { color:var(--mc-calm); }
-.mc-footer-brand p { font-size:.85rem; line-height:1.7; margin:0 0 16px; max-width:260px; }
-.mc-footer-social { display:flex; gap:10px; }
+.mc-footer-brand .mc-footer-logo .bi {
+  color: var(--mc-primary);
+}
+.mc-footer-brand p {
+  font-size: 0.85rem;
+  line-height: 1.7;
+  margin: 0 0 16px;
+  max-width: 260px;
+  color: var(--mc-muted);
+}
+.mc-footer-social {
+  display: flex;
+  gap: 10px;
+}
 .mc-footer-social a {
-  width:36px; height:36px; border-radius:8px;
-  background:rgba(255,255,255,.08); color:rgba(255,255,255,.7);
-  display:flex; align-items:center; justify-content:center;
-  font-size:.9rem; transition:all var(--mc-anim);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--mc-surface-2);
+  border: 1px solid var(--mc-border);
+  color: var(--mc-text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
 }
-.mc-footer-social a:hover { background:rgba(255,255,255,.18); color:#fff; opacity:1; }
-.mc-footer-col h6 { color:#fff; font-size:.8rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin:0 0 14px; }
-.mc-footer-col a { display:flex; align-items:center; gap:6px; color:rgba(255,255,255,.6); font-size:.85rem; padding:4px 0; transition:color var(--mc-anim); }
-.mc-footer-col a:hover { color:#fff; opacity:1; }
+.mc-footer-social a:hover {
+  background: var(--mc-primary);
+  border-color: var(--mc-primary);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+.mc-footer-col h6 {
+  color: var(--mc-text);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+}
+.mc-footer-col a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mc-muted);
+  font-size: 0.86rem;
+  padding: 5px 0;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.mc-footer-col a:hover {
+  color: var(--mc-primary);
+  transform: translateX(3px);
+}
 .mc-footer-bottom {
-  max-width:1100px; margin:0 auto;
-  padding:16px 24px; border-top:1px solid rgba(255,255,255,.08);
-  display:flex; align-items:center; justify-content:space-between;
-  font-size:.78rem; color:rgba(255,255,255,.4); flex-wrap:wrap; gap:8px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 18px 24px;
+  border-top: 1px solid var(--mc-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--mc-muted);
+  flex-wrap: wrap;
+  gap: 10px;
 }
-.mc-footer-links { display:flex; gap:16px; }
-.mc-footer-links a { color:rgba(255,255,255,.4); font-size:.78rem; }
-.mc-footer-links a:hover { color:rgba(255,255,255,.7); opacity:1; }
+.mc-footer-links {
+  display: flex;
+  gap: 16px;
+}
+.mc-footer-links a {
+  color: var(--mc-muted);
+  font-size: 0.78rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.mc-footer-links a:hover {
+  color: var(--mc-primary);
+}
+.mc-footer-user-status {
+  color: var(--mc-muted);
+  font-size: 0.78rem;
+}
+.mc-footer-user-status strong {
+  color: var(--mc-text);
+}
 
 /* ==========================================================
    CONTAINER & PAGE STRUCTURE

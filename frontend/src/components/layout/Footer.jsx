@@ -64,8 +64,8 @@ export default function Footer() {
       <div className="mc-footer-bottom">
         <span>© {new Date().getFullYear()} MindCare. All rights reserved.</span>
         {user && (
-          <span style={{ color: "rgba(255,255,255,.4)", fontSize: ".78rem" }}>
-            Signed in as <strong style={{ color: "rgba(255,255,255,.6)" }}>{user.displayName || user.username}</strong>
+          <span className="mc-footer-user-status">
+            Signed in as <strong>{user.displayName || user.username}</strong>
             {" "}· {user.role?.replace("ROLE_", "")}
           </span>
         )}
