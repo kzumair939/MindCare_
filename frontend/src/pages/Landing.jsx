@@ -149,7 +149,7 @@ export default function Landing() {
 
   return (
     <PublicShell hideFooter={false}>
-      <main style={{ background: "#050814", color: "#f8fafc", overflow: "hidden" }}>
+      <main className="mc-landing-main">
 
         {/* ── 3D NEURAL HERO SECTION ── */}
         <section className="mc-landing-hero">
@@ -168,9 +168,6 @@ export default function Landing() {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "8px",
-                  background: "rgba(99, 102, 241, 0.15)",
-                  border: "1px solid rgba(99, 102, 241, 0.4)",
-                  color: "#818cf8",
                   padding: "6px 14px",
                   borderRadius: "99px",
                   fontSize: "clamp(0.72rem, 2.8vw, 0.82rem)",
@@ -223,9 +220,6 @@ export default function Landing() {
                   to="/signup"
                   className="mc-btn-hero-outline"
                   style={{
-                    background: "rgba(255, 255, 255, 0.05)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    color: "#ffffff",
                     padding: "14px 22px",
                     borderRadius: "14px",
                     fontWeight: "600",
@@ -327,41 +321,29 @@ export default function Landing() {
         </section>
 
         {/* ── GEMINI CLINICAL AI DIAGNOSTIC SHOWCASE ── */}
-        <section style={{ padding: "90px 0", background: "linear-gradient(180deg, #050814 0%, #0c1228 100%)", position: "relative" }}>
+        <section className="mc-landing-ai-section">
           <div className="mc-container">
             <div style={{ maxWidth: "800px", margin: "0 auto 50px", textAlign: "center" }} className="mc-scroll-reveal">
               <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(56, 189, 248, 0.1)", border: "1px solid rgba(56, 189, 248, 0.3)", color: "#38bdf8", padding: "5px 14px", borderRadius: "99px", fontSize: "0.8rem", fontWeight: "700", marginBottom: "14px" }}>
                 <i className="bi bi-lightning-charge-fill" /> Real-Time Adaptive Intake
               </div>
-              <h2 style={{ fontSize: "2.3rem", fontWeight: "800", color: "#fff", marginBottom: "14px", letterSpacing: "-0.02em" }}>
+              <h2 className="mc-section-heading">
                 An AI That Truly Listens and Adapts to You
               </h2>
-              <p style={{ color: "#94a3b8", fontSize: "1.05rem", lineHeight: "1.7" }}>
+              <p className="mc-section-sub">
                 Unlike rigid, static questionnaires, MindCare's Gemini Clinical AI analyzes each answer in real time to ask meaningful follow-up questions — just like an empathetic clinical specialist.
               </p>
             </div>
 
             {/* AI Survey Simulation Card */}
-            <div
-              className="mc-scroll-reveal"
-              style={{
-                maxWidth: "920px",
-                margin: "0 auto",
-                background: "rgba(15, 23, 42, 0.7)",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
-                borderRadius: "24px",
-                padding: "clamp(20px, 4vw, 36px)",
-                boxShadow: "0 24px 60px rgba(0,0,0,0.4)",
-                backdropFilter: "blur(20px)"
-              }}
-            >
+            <div className="mc-scroll-reveal mc-ai-card">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "18px", marginBottom: "24px", flexWrap: "wrap", gap: "12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: "linear-gradient(135deg, #4f46e5, #06b6d4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "1.2rem" }}>
                     <i className="bi bi-stars" />
                   </div>
                   <div>
-                    <div style={{ color: "#fff", fontWeight: "700", fontSize: "1rem" }}>Adaptive Neural Check-in</div>
+                    <div style={{ fontWeight: "700", fontSize: "1rem" }}>Adaptive Neural Check-in</div>
                     <div style={{ color: "#38bdf8", fontSize: "0.8rem", fontWeight: "600" }}>Live Multi-Turn Clinical Triage</div>
                   </div>
                 </div>
@@ -384,23 +366,23 @@ export default function Landing() {
 
               {/* Sample Dialog Preview */}
               <div style={{ display: "grid", gap: "16px" }}>
-                <div style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.06)", borderRadius: "16px", padding: "18px" }}>
-                  <div style={{ fontSize: "0.78rem", color: "#94a3b8", fontWeight: "700", textTransform: "uppercase", marginBottom: "6px" }}>
+                <div className="mc-dialog-client">
+                  <div style={{ fontSize: "0.78rem", color: "var(--mc-muted)", fontWeight: "700", textTransform: "uppercase", marginBottom: "6px" }}>
                     Client Response (Turn 1)
                   </div>
-                  <div style={{ color: "#e2e8f0", fontSize: "0.95rem" }}>
+                  <div style={{ fontSize: "0.95rem" }}>
                     "I have severe anxiety and racing heart spikes before team meetings in the morning."
                   </div>
                 </div>
 
-                <div style={{ background: "rgba(99, 102, 241, 0.08)", border: "1px solid rgba(99, 102, 241, 0.25)", borderRadius: "16px", padding: "18px" }}>
+                <div className="mc-dialog-ai">
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.78rem", color: "#818cf8", fontWeight: "700", textTransform: "uppercase", marginBottom: "6px" }}>
                     <i className="bi bi-sparkles" /> AI Clinical Reflection &amp; Dynamic Follow-Up
                   </div>
                   <div style={{ color: "#93c5fd", fontStyle: "italic", fontSize: "0.9rem", marginBottom: "8px" }}>
                     "It sounds incredibly exhausting to feel that physical surge of panic right as your workday begins..."
                   </div>
-                  <div style={{ color: "#ffffff", fontWeight: "600", fontSize: "1rem" }}>
+                  <div style={{ fontWeight: "600", fontSize: "1rem" }}>
                     "When those sudden physical sensations occur, what thoughts typically run through your mind?"
                   </div>
                 </div>
@@ -410,16 +392,16 @@ export default function Landing() {
         </section>
 
         {/* ── THERAPY MODALITIES SECTION ── */}
-        <section style={{ padding: "90px 0", background: "#080c1d" }}>
+        <section className="mc-landing-modalities-section">
           <div className="mc-container">
             <div style={{ maxWidth: "700px", margin: "0 auto 60px", textAlign: "center" }} className="mc-scroll-reveal">
               <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(129, 140, 248, 0.1)", border: "1px solid rgba(129, 140, 248, 0.3)", color: "#818cf8", padding: "5px 14px", borderRadius: "99px", fontSize: "0.8rem", fontWeight: "700", marginBottom: "14px" }}>
                 <i className="bi bi-diagram-3-fill" /> Evidence-Based Modalities
               </div>
-              <h2 style={{ fontSize: "2.3rem", fontWeight: "800", color: "#fff", marginBottom: "14px", letterSpacing: "-0.02em" }}>
+              <h2 className="mc-section-heading">
                 Personalized Pathways for Every Mind
               </h2>
-              <p style={{ color: "#94a3b8", fontSize: "1rem", lineHeight: "1.7" }}>
+              <p className="mc-section-sub">
                 Our clinicians specialize in gold-standard therapeutic modalities matched directly to your neurological needs.
               </p>
             </div>
@@ -428,17 +410,7 @@ export default function Landing() {
               {MODALITIES.map((mod, idx) => (
                 <div
                   key={mod.code}
-                  className="mc-scroll-reveal"
-                  style={{
-                    background: "rgba(15, 23, 42, 0.6)",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
-                    borderRadius: "20px",
-                    padding: "30px 26px",
-                    transition: "all 0.3s ease",
-                    backdropFilter: "blur(12px)",
-                    position: "relative",
-                    overflow: "hidden"
-                  }}
+                  className="mc-scroll-reveal mc-modality-card"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-6px)";
                     e.currentTarget.style.borderColor = mod.color;
@@ -446,8 +418,8 @@ export default function Landing() {
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
-                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
@@ -458,13 +430,13 @@ export default function Landing() {
                       {mod.code}
                     </span>
                   </div>
-                  <h3 style={{ fontSize: "1.2rem", fontWeight: "800", color: "#fff", marginBottom: "10px" }}>
+                  <h3 style={{ fontSize: "1.2rem", fontWeight: "800", marginBottom: "10px" }}>
                     {mod.title}
                   </h3>
-                  <p style={{ color: "#94a3b8", fontSize: "0.9rem", lineHeight: "1.6", marginBottom: "16px" }}>
+                  <p style={{ fontSize: "0.9rem", lineHeight: "1.6", marginBottom: "16px" }}>
                     {mod.desc}
                   </p>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.78rem", color: "#cbd5e1", fontWeight: "600" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.78rem", color: "var(--mc-muted)", fontWeight: "600" }}>
                     <i className="bi bi-geo-alt-fill" style={{ color: mod.color }} /> Target Lobe: {mod.lobe}
                   </div>
                 </div>
@@ -474,16 +446,16 @@ export default function Landing() {
         </section>
 
         {/* ── PLATFORM PILLARS & FEATURES ── */}
-        <section style={{ padding: "90px 0", background: "#050814" }}>
+        <section className="mc-landing-features-section">
           <div className="mc-container">
             <div style={{ maxWidth: "700px", margin: "0 auto 60px", textAlign: "center" }} className="mc-scroll-reveal">
               <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(52, 211, 153, 0.1)", border: "1px solid rgba(52, 211, 153, 0.3)", color: "#34d399", padding: "5px 14px", borderRadius: "99px", fontSize: "0.8rem", fontWeight: "700", marginBottom: "14px" }}>
                 <i className="bi bi-shield-lock-fill" /> Safe, Simple, Secure
               </div>
-              <h2 style={{ fontSize: "2.3rem", fontWeight: "800", color: "#fff", marginBottom: "14px" }}>
+              <h2 className="mc-section-heading">
                 A Comprehensive Sanctuary for Healing
               </h2>
-              <p style={{ color: "#94a3b8", fontSize: "1rem" }}>
+              <p className="mc-section-sub">
                 Designed from the ground up for comfort, accessibility, and strict privacy.
               </p>
             </div>
@@ -492,22 +464,14 @@ export default function Landing() {
               {PLATFORM_FEATURES.map((feat, i) => (
                 <div
                   key={feat.title}
-                  className="mc-scroll-reveal"
-                  style={{
-                    background: "rgba(15, 23, 42, 0.5)",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
-                    borderRadius: "20px",
-                    padding: "30px",
-                    backdropFilter: "blur(12px)",
-                    transition: "all 0.3s ease"
-                  }}
+                  className="mc-scroll-reveal mc-feature-landing-card"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-4px)";
                     e.currentTarget.style.borderColor = "rgba(99, 102, 241, 0.4)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
+                    e.currentTarget.style.borderColor = "";
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
@@ -518,10 +482,10 @@ export default function Landing() {
                       {feat.tag}
                     </span>
                   </div>
-                  <h3 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#fff", marginBottom: "8px" }}>
+                  <h3 style={{ fontSize: "1.15rem", fontWeight: "700", marginBottom: "8px" }}>
                     {feat.title}
                   </h3>
-                  <p style={{ color: "#94a3b8", fontSize: "0.9rem", lineHeight: "1.6", margin: 0 }}>
+                  <p style={{ fontSize: "0.9rem", lineHeight: "1.6", margin: 0 }}>
                     {feat.desc}
                   </p>
                 </div>
@@ -531,16 +495,16 @@ export default function Landing() {
         </section>
 
         {/* ── HOW IT WORKS SECTION ── */}
-        <section style={{ padding: "90px 0", background: "linear-gradient(180deg, #050814 0%, #0d1329 100%)" }}>
+        <section className="mc-landing-steps-section">
           <div className="mc-container">
             <div style={{ maxWidth: "700px", margin: "0 auto 60px", textAlign: "center" }} className="mc-scroll-reveal">
               <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(251, 191, 36, 0.1)", border: "1px solid rgba(251, 191, 36, 0.3)", color: "#fbbf24", padding: "5px 14px", borderRadius: "99px", fontSize: "0.8rem", fontWeight: "700", marginBottom: "14px" }}>
                 <i className="bi bi-clock-history" /> 4 Simple Steps
               </div>
-              <h2 style={{ fontSize: "2.3rem", fontWeight: "800", color: "#fff", marginBottom: "14px" }}>
+              <h2 className="mc-section-heading">
                 How Your MindCare Journey Begins
               </h2>
-              <p style={{ color: "#94a3b8", fontSize: "1rem" }}>
+              <p className="mc-section-sub">
                 Get started in under 3 minutes with full guidance every step of the way.
               </p>
             </div>
@@ -549,15 +513,7 @@ export default function Landing() {
               {STEPS.map((step, idx) => (
                 <div
                   key={step.num}
-                  className="mc-scroll-reveal"
-                  style={{
-                    background: "rgba(15, 23, 42, 0.6)",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
-                    borderRadius: "20px",
-                    padding: "30px 24px",
-                    position: "relative",
-                    backdropFilter: "blur(12px)"
-                  }}
+                  className="mc-scroll-reveal mc-step-landing-card"
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
                     <span style={{ fontSize: "1.8rem", fontWeight: "900", color: "#4f46e5", opacity: 0.8 }}>
@@ -567,10 +523,10 @@ export default function Landing() {
                       <i className={`bi bi-${step.icon}`} />
                     </div>
                   </div>
-                  <h4 style={{ fontSize: "1.1rem", fontWeight: "800", color: "#fff", marginBottom: "8px" }}>
+                  <h4 style={{ fontSize: "1.1rem", fontWeight: "800", marginBottom: "8px" }}>
                     {step.title}
                   </h4>
-                  <p style={{ color: "#94a3b8", fontSize: "0.88rem", lineHeight: "1.6", margin: 0 }}>
+                  <p style={{ fontSize: "0.88rem", lineHeight: "1.6", margin: 0 }}>
                     {step.desc}
                   </p>
                 </div>
@@ -580,21 +536,9 @@ export default function Landing() {
         </section>
 
         {/* ── CALL TO ACTION SECTION ── */}
-        <section style={{ padding: "80px 0 110px", background: "#0d1329" }}>
+        <section className="mc-landing-cta-section">
           <div className="mc-container">
-            <div
-              className="mc-scroll-reveal"
-              style={{
-                background: "linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)",
-                border: "1px solid rgba(99, 102, 241, 0.3)",
-                borderRadius: "32px",
-                padding: "clamp(36px, 6vw, 60px) clamp(18px, 4vw, 40px)",
-                textAlign: "center",
-                boxShadow: "0 24px 64px rgba(0, 0, 0, 0.5)",
-                position: "relative",
-                overflow: "hidden"
-              }}
-            >
+            <div className="mc-scroll-reveal mc-cta-card">
               <div style={{ position: "absolute", top: "-100px", right: "-100px", width: "300px", height: "300px", background: "radial-gradient(circle, rgba(56, 189, 248, 0.2), transparent 70%)", pointerEvents: "none" }} />
               <div style={{ position: "absolute", bottom: "-100px", left: "-100px", width: "300px", height: "300px", background: "radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent 70%)", pointerEvents: "none" }} />
 
@@ -602,11 +546,11 @@ export default function Landing() {
                 <i className="bi bi-gift-fill" /> Start with 2 Free Sessions Today
               </div>
 
-              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: "900", color: "#fff", marginBottom: "16px", letterSpacing: "-0.02em" }}>
+              <h2 className="mc-cta-title">
                 Ready to Reclaim Your Mental Clarity?
               </h2>
 
-              <p style={{ color: "rgba(226, 232, 240, 0.8)", fontSize: "1.1rem", maxWidth: "600px", margin: "0 auto 36px", lineHeight: "1.7" }}>
+              <p className="mc-cta-sub">
                 Take your free 3-minute adaptive clinical check-in or create an account in 30 seconds. No credit card required.
               </p>
 
@@ -632,10 +576,8 @@ export default function Landing() {
 
                 <Link
                   to="/signup"
+                  className="mc-cta-btn-outline"
                   style={{
-                    background: "rgba(255, 255, 255, 0.08)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    color: "#ffffff",
                     padding: "16px 28px",
                     borderRadius: "14px",
                     fontWeight: "600",
@@ -650,7 +592,7 @@ export default function Landing() {
                 </Link>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "center", gap: "24px", marginTop: "32px", color: "rgba(226, 232, 240, 0.6)", fontSize: "0.85rem", fontWeight: "600", flexWrap: "wrap" }}>
+              <div className="mc-cta-trust-row">
                 <span><i className="bi bi-lock-fill" style={{ color: "#38bdf8" }} /> No Card Needed</span>
                 <span><i className="bi bi-shield-fill-check" style={{ color: "#34d399" }} /> Cancel Anytime</span>
                 <span><i className="bi bi-incognito" style={{ color: "#c084fc" }} /> 100% Anonymous Mode</span>
