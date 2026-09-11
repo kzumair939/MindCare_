@@ -19,9 +19,9 @@
 
 ## 🌐 Live Application & Links
 
-* 🚀 **Live Production Website**: [MindCare Telehealth Platform](https://mindcare-spa.onrender.com) *(Hosted on Render)*
+* 🚀 **Live Production Website**: [https://mindcare-frontend-xouk.onrender.com](https://mindcare-frontend-xouk.onrender.com) *(Hosted on Render)*
 * 📂 **Source Repository**: [https://github.com/kzumair939/MindCare_](https://github.com/kzumair939/MindCare_)
-* 📖 **Backend API Base**: `https://mindcare-spa.onrender.com/api` (or custom backend host)
+
 
 ---
 
@@ -181,7 +181,7 @@ cp .env.example .env
 | `EMAIL_USERNAME` | Yes | SMTP Email Address for OTP delivery | `your_email@gmail.com` |
 | `EMAIL_PASSWORD` | Yes | SMTP Application Password | `your_google_app_password` |
 | `GEMINI_API_KEY` | Optional | Google Gemini AI API key | `AIzaSy...` |
-| `CORS_ALLOWED_ORIGINS` | Yes | Comma-delimited list of allowed frontends | `http://localhost:5173,https://mindcare-spa.onrender.com` |
+| `CORS_ALLOWED_ORIGINS` | Yes | Comma-delimited list of allowed frontends | `http://localhost:5173,https://mindcare-frontend-xouk.onrender.com` |
 
 ---
 
