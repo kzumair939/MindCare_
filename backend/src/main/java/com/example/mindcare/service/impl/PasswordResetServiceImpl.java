@@ -37,9 +37,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     public void createPasswordResetToken(String email) {
-        User user = userRepository.findByEmail(email)
-                .or(() -> userRepository.findByUsername(email))
-                .orElseThrow(() -> new NotFoundException("No account found with this email or username!"));
+        String cleanEmail = email != null ? email.trim() : "";
+        User user = userRepository.findByEmailIgnoreCase(cleanEmail)
+                .or(() -> userRepository.findByUsernameIgnoreCase(cleanEmail))
+                .orElseThrow(() -> new NotFoundException("No account found with this email or username: " + cleanEmail));
 
         // Generate 6-digit numeric OTP
         String otp = String.format("%06d", secureRandom.nextInt(1_000_000));
@@ -55,7 +56,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         tokenRepository.saveAndFlush(resetToken);
 
         log.info("[MINDCARE PASSWORD RESET OTP SERVICE] Password reset OTP generated and dispatched to {} (Expires in 15 minutes)", user.getEmail());
-        log.debug("[MINDCARE PASSWORD RESET OTP DEBUG] To: {} ({}), OTP: {}", user.getEmail(), user.getUsername(), otp);
+        log.info("[MINDCARE PASSWORD RESET OTP] User: {}, OTP Code: {}", user.getEmail(), otp);
 
         // Send Email Asynchronously
         String html = buildResetHtml(otp);
@@ -121,8 +122,9 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Override
     public boolean verifyResetOtp(String email, String otp) {
         if (email == null || otp == null) return false;
-        User user = userRepository.findByEmail(email)
-                .or(() -> userRepository.findByUsername(email))
+        String cleanEmail = email.trim();
+        User user = userRepository.findByEmailIgnoreCase(cleanEmail)
+                .or(() -> userRepository.findByUsernameIgnoreCase(cleanEmail))
                 .orElse(null);
         if (user == null) return false;
 
@@ -140,9 +142,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             throw new BadRequestException("OTP code is required");
         }
 
-        User user = userRepository.findByEmail(email)
-                .or(() -> userRepository.findByUsername(email))
-                .orElseThrow(() -> new NotFoundException("No account found with this email or username"));
+        String cleanEmail = email.trim();
+        User user = userRepository.findByEmailIgnoreCase(cleanEmail)
+                .or(() -> userRepository.findByUsernameIgnoreCase(cleanEmail))
+                .orElseThrow(() -> new NotFoundException("No account found with this email or username: " + cleanEmail));
 
         PasswordResetToken resetToken = tokenRepository.findTopByUserOrderByExpiryDateDesc(user)
                 .orElseThrow(() -> new BadRequestException("No password reset request found. Please request a new OTP."));

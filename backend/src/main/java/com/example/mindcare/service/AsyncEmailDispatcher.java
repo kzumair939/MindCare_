@@ -41,9 +41,9 @@ public class AsyncEmailDispatcher {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            log.info("Asynchronous HTML email sent successfully to {}", to);
+            log.info("[EMAIL SERVICE] Asynchronous HTML email sent successfully to {}", to);
         } catch (Exception e) {
-            log.warn("HTML email failed ({}), attempting plain-text fallback to {}...", e.getMessage(), to);
+            log.warn("[EMAIL SERVICE] HTML email failed ({}), attempting plain-text fallback to {}...", e.getMessage(), to);
             try {
                 SimpleMailMessage msg = new SimpleMailMessage();
                 if (senderEmail != null && !senderEmail.isBlank()) {
@@ -53,9 +53,9 @@ public class AsyncEmailDispatcher {
                 msg.setSubject(subject);
                 msg.setText(plainFallback != null ? plainFallback : "Please check your MindCare notifications.");
                 mailSender.send(msg);
-                log.info("Plain-text email sent successfully to {}", to);
+                log.info("[EMAIL SERVICE] Plain-text fallback email sent successfully to {}", to);
             } catch (Exception ex) {
-                log.warn("Asynchronous SMTP Mail sending failed for {}: {}", to, ex.getMessage());
+                log.error("[EMAIL SERVICE] SMTP Mail delivery failed to {}. Error: {}", to, ex.getMessage(), ex);
             }
         }
     }
