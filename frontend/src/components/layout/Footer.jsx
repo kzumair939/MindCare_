@@ -38,9 +38,9 @@ export default function Footer() {
           <span className="mc-footer-logo"><i className="bi bi-heart-pulse-fill"/> MindCare</span>
           <p>Your trusted space for mental wellness. Private, secure, and always here for you.</p>
           <div className="mc-footer-social">
-            <a href="#" aria-label="Twitter"><i className="bi bi-twitter-x"/></a>
-            <a href="#" aria-label="Instagram"><i className="bi bi-instagram"/></a>
-            <a href="#" aria-label="LinkedIn"><i className="bi bi-linkedin"/></a>
+            <a href="https://github.com/kzumair939" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i className="bi bi-github"/></a>
+            <a href="https://www.linkedin.com/in/umairkhan28/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i className="bi bi-linkedin"/></a>
+            <a href="mailto:kzumair939@gmail.com" aria-label="Email"><i className="bi bi-envelope-fill"/></a>
           </div>
         </div>
         <div className="mc-footer-col">
@@ -51,8 +51,9 @@ export default function Footer() {
         </div>
         <div className="mc-footer-col">
           <h6>Contact</h6>
-          <a href="mailto:support@mindcare.app"><i className="bi bi-envelope"/> support@mindcare.app</a>
-          <a href="tel:+18001234567"><i className="bi bi-telephone"/> +1 800 123 4567</a>
+          <a href="mailto:kzumair939@gmail.com"><i className="bi bi-envelope"/> kzumair939@gmail.com</a>
+          <a href="tel:03142712220"><i className="bi bi-telephone"/> 0314 2712220</a>
+          <a href="https://github.com/kzumair939" target="_blank" rel="noopener noreferrer"><i className="bi bi-github"/> GitHub Profile</a>
         </div>
         <div className="mc-footer-col">
           <h6>Legal</h6>
