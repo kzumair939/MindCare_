@@ -1540,134 +1540,515 @@ img { max-width:100%; }
 }
 .mc-trust-row .bi { color: #38bdf8; }
 
-/* 3D Brain Stage & Surrounding Floating Badges */
-.mc-3d-brain-stage {
+/* ── Interactive Hero Floating Session & Clinical Card ── */
+.mc-hero-floating-container {
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   width: 100%;
-  height: 520px;
-}
-.mc-3d-brain-canvas-wrap {
-  width: 100%;
-  height: 100%;
-  border-radius: 28px;
-  position: relative;
-  overflow: hidden;
-}
-.mc-3d-brain-canvas-wrap canvas {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100%;
-  display: block;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 16px;
 }
 
-.mc-brain-floating-badge {
+.mc-hero-card-glow {
   position: absolute;
-  background: rgba(255, 255, 255, 0.95);
+  top: 15%;
+  left: 10%;
+  right: 10%;
+  bottom: 15%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(56, 189, 248, 0.15) 50%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 36px;
+}
+
+.mc-hero-interactive-card {
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 26px;
+  padding: 26px 24px;
+  box-shadow: 0 22px 55px rgba(79, 70, 229, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(15, 23, 60, 0.1);
-  border-radius: 18px;
-  padding: 12px 18px;
-  box-shadow: 0 16px 36px rgba(15, 30, 80, 0.1);
+  animation: mcHeroFloat 6s ease-in-out infinite;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] .mc-hero-interactive-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(99, 102, 241, 0.15);
+}
+
+.mc-hero-interactive-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 28px 65px rgba(79, 70, 229, 0.18), 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .mc-hero-interactive-card:hover {
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7), 0 0 50px rgba(99, 102, 241, 0.25);
+}
+
+/* Card Header */
+.mc-hero-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 20px;
+}
+
+[data-theme="dark"] .mc-hero-card-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mc-hero-clinician-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  z-index: 10;
-  transition: all 0.3s ease;
-  pointer-events: auto;
-}
-[data-theme="dark"] .mc-brain-floating-badge {
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 16px 36px rgba(0,0,0,0.35);
 }
 
-.mc-brain-floating-badge:hover {
-  transform: translateY(-4px);
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 20px 44px rgba(99, 102, 241, 0.2);
+.mc-hero-avatar-wrap {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
 }
-.mc-badge-top-left {
-  top: 20px;
-  left: -10px;
-  animation: float 5s ease-in-out infinite;
+
+.mc-hero-avatar-gradient {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.35rem;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
-.mc-badge-bottom-right {
-  bottom: 25px;
-  right: -10px;
-  animation: float 6s ease-in-out infinite 1.5s;
-}
-.mc-badge-pulse-indicator {
-  width: 10px;
-  height: 10px;
+
+.mc-hero-avatar-status {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 12px #34d399;
-  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+  background: #22c55e;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 8px #22c55e;
 }
-.mc-badge-title {
+
+[data-theme="dark"] .mc-hero-avatar-status {
+  border-color: #0f172a;
+}
+
+.mc-hero-clinician-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.98rem;
+  font-weight: 800;
   color: #0f172a;
-  font-size: 0.85rem;
-  font-weight: 700;
   line-height: 1.2;
 }
-[data-theme="dark"] .mc-badge-title {
+
+[data-theme="dark"] .mc-hero-clinician-name {
   color: #ffffff;
 }
-.mc-badge-sub {
-  color: #64748b;
-  font-size: 0.75rem;
-  font-weight: 500;
+
+.mc-verified-badge {
+  color: #0284c7;
+  font-size: 0.95rem;
 }
-[data-theme="dark"] .mc-badge-sub {
+
+[data-theme="dark"] .mc-verified-badge {
+  color: #38bdf8;
+}
+
+.mc-hero-clinician-role {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 3px;
+}
+
+[data-theme="dark"] .mc-hero-clinician-role {
   color: #94a3b8;
 }
 
-/* Neural Explorer Hotspots / Lobe Bar */
-.mc-neural-explorer-bar {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 18px;
-}
-.mc-neural-tag {
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 60, 0.12);
-  color: #334155;
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 99px;
-  backdrop-filter: blur(8px);
+.mc-hero-live-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  cursor: pointer;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+[data-theme="dark"] .mc-hero-live-pill {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.mc-live-ping-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+  animation: mcPingPulse 1.8s infinite;
+}
+
+/* Card Body - Sound Wave & Dialogue */
+.mc-hero-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mc-hero-wave-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 18px;
+}
+
+[data-theme="dark"] .mc-hero-wave-section {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.mc-hero-wave-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+
+[data-theme="dark"] .mc-hero-wave-header {
+  color: #94a3b8;
+}
+
+.mc-hero-wave-header i {
+  color: #4f46e5;
+  margin-right: 4px;
+}
+
+[data-theme="dark"] .mc-hero-wave-header i {
+  color: #818cf8;
+}
+
+.mc-hero-wave-latency {
+  color: #16a34a;
+  font-weight: 700;
+  text-transform: none;
+}
+
+[data-theme="dark"] .mc-hero-wave-latency {
+  color: #4ade80;
+}
+
+.mc-hero-audio-wave {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  gap: 4px;
+}
+
+.mc-hero-wave-bar {
+  flex: 1;
+  background: linear-gradient(180deg, #4f46e5 0%, #06b6d4 100%);
+  border-radius: 99px;
+  min-height: 6px;
+  max-height: 100%;
+  animation: mcWaveBounce 1.4s ease-in-out infinite alternate;
+  opacity: 0.85;
+}
+
+[data-theme="dark"] .mc-hero-wave-bar {
+  background: linear-gradient(180deg, #818cf8 0%, #38bdf8 100%);
+}
+
+/* Dialogue Box */
+.mc-hero-dialogue-box {
+  position: relative;
+  background: linear-gradient(135deg, rgba(238, 242, 255, 0.7) 0%, rgba(240, 249, 255, 0.7) 100%);
+  border: 1px solid rgba(199, 210, 254, 0.8);
+  border-radius: 16px;
+  padding: 16px 18px;
+}
+
+[data-theme="dark"] .mc-hero-dialogue-box {
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.5) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.mc-dialogue-quote-icon {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 1.8rem;
+  color: rgba(79, 70, 229, 0.15);
+  line-height: 1;
+}
+
+[data-theme="dark"] .mc-dialogue-quote-icon {
+  color: rgba(129, 140, 248, 0.2);
+}
+
+.mc-hero-dialogue-text {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #1e293b;
+  font-weight: 500;
+  font-style: italic;
+  position: relative;
+  z-index: 2;
+}
+
+[data-theme="dark"] .mc-hero-dialogue-text {
+  color: #e2e8f0;
+}
+
+.mc-hero-dialogue-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.mc-stress-shift-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #0f172a;
+}
+
+[data-theme="dark"] .mc-stress-shift-badge {
+  color: #f8fafc;
+}
+
+.mc-stress-shift-badge strong {
+  color: #16a34a;
+}
+
+[data-theme="dark"] .mc-stress-shift-badge strong {
+  color: #4ade80;
+}
+
+.mc-stress-shift-badge i {
+  color: #16a34a;
+}
+
+[data-theme="dark"] .mc-stress-shift-badge i {
+  color: #4ade80;
+}
+
+.mc-dialogue-modality {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4f46e5;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 0.74rem;
+}
+
+[data-theme="dark"] .mc-dialogue-modality {
+  background: rgba(129, 140, 248, 0.15);
+  color: #a5b4fc;
+}
+
+/* Card Chips Footer */
+.mc-hero-card-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+[data-theme="dark"] .mc-hero-card-chips {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mc-hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 99px;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(15, 30, 80, 0.04);
 }
-.mc-neural-tag:hover, .mc-neural-tag.active {
-  background: #4f46e5;
-  border-color: #4f46e5;
+
+.mc-chip-privacy {
+  background: rgba(147, 51, 234, 0.1);
+  color: #7e22ce;
+  border: 1px solid rgba(147, 51, 234, 0.2);
+}
+
+[data-theme="dark"] .mc-chip-privacy {
+  background: rgba(192, 132, 252, 0.12);
+  color: #c084fc;
+  border-color: rgba(192, 132, 252, 0.25);
+}
+
+.mc-chip-video {
+  background: rgba(2, 132, 199, 0.1);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.2);
+}
+
+[data-theme="dark"] .mc-chip-video {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.25);
+}
+
+.mc-chip-rating {
+  background: rgba(217, 119, 6, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+[data-theme="dark"] .mc-chip-rating {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.25);
+}
+
+/* Floating Satellite Badges */
+.mc-hero-sat-badge {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: 0 14px 34px rgba(15, 30, 80, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .mc-hero-sat-badge {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+
+.mc-hero-sat-badge:hover {
+  transform: translateY(-3px) scale(1.03);
+}
+
+.mc-sat-top-left {
+  top: 6px;
+  left: -16px;
+  animation: mcSatFloat 5s ease-in-out infinite;
+}
+
+.mc-sat-bottom-right {
+  bottom: 8px;
+  right: -16px;
+  animation: mcSatFloat 5.5s ease-in-out infinite 1.2s;
+}
+
+.mc-sat-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.mc-sat-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+[data-theme="dark"] .mc-sat-title {
   color: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
 }
-[data-theme="dark"] .mc-neural-tag {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
-  box-shadow: none;
+
+.mc-sat-sub {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
 }
-[data-theme="dark"] .mc-neural-tag:hover, [data-theme="dark"] .mc-neural-tag.active {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: #818cf8;
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+
+[data-theme="dark"] .mc-sat-sub {
+  color: #94a3b8;
+}
+
+/* Animations */
+@keyframes mcHeroFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes mcSatFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes mcWaveBounce {
+  0% {
+    transform: scaleY(0.35);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes mcPingPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
 /* Stats Section */
@@ -2517,9 +2898,23 @@ img { max-width:100%; }
     font-size: 0.82rem !important;
     white-space: nowrap !important;
   }
-  .mc-3d-brain-stage {
-    height: 310px;
-    max-width: 330px;
+  .mc-hero-floating-container {
+    padding: 12px 6px;
+    max-width: 100%;
+  }
+  .mc-hero-interactive-card {
+    padding: 20px 16px;
+    border-radius: 20px;
+  }
+  .mc-sat-top-left {
+    top: -10px;
+    left: 4px;
+    padding: 8px 12px;
+  }
+  .mc-sat-bottom-right {
+    bottom: -10px;
+    right: 4px;
+    padding: 8px 12px;
   }
 }
 
@@ -2541,18 +2936,14 @@ img { max-width:100%; }
     padding: 13px 18px !important;
     font-size: 0.94rem !important;
   }
-  .mc-3d-brain-stage {
-    height: 270px;
-    max-width: 290px;
+  .mc-hero-sat-badge {
+    display: none;
   }
-  .mc-neural-explorer-bar {
-    gap: 6px;
-    margin-top: 14px;
+  .mc-hero-floating-container {
+    padding: 4px 0;
   }
-  .mc-neural-tag {
+  .mc-hero-clinician-role {
     font-size: 0.72rem;
-    padding: 5px 10px;
-    gap: 4px;
   }
   .mc-feature-grid { grid-template-columns:1fr; }
   .mc-steps-grid { grid-template-columns:1fr; }

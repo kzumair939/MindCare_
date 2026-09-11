@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import PublicShell from "../components/layout/PublicShell";
-import InteractiveBrain3D from "../components/common/InteractiveBrain3D";
 
 const STATS = [
   ["500+", "Verified Clinical Therapists"],
@@ -129,7 +128,6 @@ const STEPS = [
 
 export default function Landing() {
   const statsRef = useRef(null);
-  const [selectedLobe, setSelectedLobe] = useState("all");
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -244,63 +242,111 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Right Hero Column: 3D Interactive Brain Stage */}
-            <div className="mc-landing-visual mc-fade-up mc-delay-2" style={{ position: "relative" }}>
-              <div className="mc-3d-brain-stage">
-                {/* Floating Metrics Badge 1 */}
-                <div className="mc-brain-floating-badge mc-badge-top-left">
-                  <div className="mc-badge-pulse-indicator" />
+            {/* Right Hero Column: Interactive Floating Session & Clinical Card */}
+            <div className="mc-landing-visual mc-fade-up mc-delay-2">
+              <div className="mc-hero-floating-container">
+                {/* Ambient Glow behind card */}
+                <div className="mc-hero-card-glow" />
+
+                {/* Floating Satellite Badge: Top-Left */}
+                <div className="mc-hero-sat-badge mc-sat-top-left">
+                  <div className="mc-sat-icon-wrap" style={{ background: "rgba(34, 197, 94, 0.15)", color: "#16a34a" }}>
+                    <i className="bi bi-shield-check" />
+                  </div>
                   <div>
-                    <div className="mc-badge-title">Prefrontal Cortex Active</div>
-                    <div className="mc-badge-sub">Cognitive Restructuring Synced</div>
+                    <div className="mc-sat-title">HIPAA Compliant</div>
+                    <div className="mc-sat-sub">100% Private &amp; Encrypted</div>
                   </div>
                 </div>
 
-                {/* 3D Brain Canvas */}
-                <InteractiveBrain3D activeMode={selectedLobe} />
-
-                {/* Floating Metrics Badge 2 */}
-                <div className="mc-brain-floating-badge mc-badge-bottom-right">
-                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(56, 189, 248, 0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#38bdf8" }}>
+                {/* Floating Satellite Badge: Bottom-Right */}
+                <div className="mc-hero-sat-badge mc-sat-bottom-right">
+                  <div className="mc-sat-icon-wrap" style={{ background: "rgba(56, 189, 248, 0.15)", color: "#0284c7" }}>
                     <i className="bi bi-stars" />
                   </div>
                   <div>
-                    <div className="mc-badge-title">Gemini Clinical AI</div>
-                    <div className="mc-badge-sub">Dynamic Neural Intake Ready</div>
+                    <div className="mc-sat-title">Gemini Clinical AI</div>
+                    <div className="mc-sat-sub">Real-Time Stress Relief</div>
                   </div>
                 </div>
-              </div>
 
-              {/* Neural Lobe Selector Bar */}
-              <div className="mc-neural-explorer-bar">
-                <button
-                  type="button"
-                  onClick={() => setSelectedLobe("all")}
-                  className={`mc-neural-tag ${selectedLobe === "all" ? "active" : ""}`}
-                >
-                  <i className="bi bi-globe2" /> Full Neural Network
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedLobe("cbt")}
-                  className={`mc-neural-tag ${selectedLobe === "cbt" ? "active" : ""}`}
-                >
-                  <i className="bi bi-cpu" /> Prefrontal (CBT)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedLobe("act")}
-                  className={`mc-neural-tag ${selectedLobe === "act" ? "active" : ""}`}
-                >
-                  <i className="bi bi-compass" /> Limbic (ACT)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedLobe("sleep")}
-                  className={`mc-neural-tag ${selectedLobe === "sleep" ? "active" : ""}`}
-                >
-                  <i className="bi bi-moon" /> Hypothalamus (Sleep)
-                </button>
+                {/* Main Hero Session Card */}
+                <div className="mc-hero-interactive-card">
+                  {/* Card Header: Clinician Profile & Live Status */}
+                  <div className="mc-hero-card-header">
+                    <div className="mc-hero-clinician-info">
+                      <div className="mc-hero-avatar-wrap">
+                        <div className="mc-hero-avatar-gradient">
+                          <i className="bi bi-person-fill" />
+                        </div>
+                        <span className="mc-hero-avatar-status" />
+                      </div>
+                      <div>
+                        <div className="mc-hero-clinician-name">
+                          <span>Dr. Sarah Jenkins, Psy.D</span>
+                          <i className="bi bi-patch-check-fill mc-verified-badge" title="Verified Licensed Clinician" />
+                        </div>
+                        <div className="mc-hero-clinician-role">Clinical Psychologist • CBT &amp; Mindfulness</div>
+                      </div>
+                    </div>
+
+                    <div className="mc-hero-live-pill">
+                      <span className="mc-live-ping-dot" />
+                      <span>Live 18:42</span>
+                    </div>
+                  </div>
+
+                  {/* Card Body: Interactive Audio Resonance Wave */}
+                  <div className="mc-hero-card-body">
+                    <div className="mc-hero-wave-section">
+                      <div className="mc-hero-wave-header">
+                        <span><i className="bi bi-soundwave" /> Voice Resonance &amp; Empathy Stream</span>
+                        <span className="mc-hero-wave-latency">HD Audio • 24ms</span>
+                      </div>
+                      <div className="mc-hero-audio-wave">
+                        {[40, 65, 85, 45, 95, 70, 30, 90, 60, 100, 75, 45, 80, 55, 90, 65, 35, 80, 50, 70].map((h, i) => (
+                          <div
+                            key={i}
+                            className="mc-hero-wave-bar"
+                            style={{
+                              animationDelay: `${(i % 10) * 0.12}s`,
+                              height: `${h}%`
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Live Therapeutic Dialogue Snippet */}
+                    <div className="mc-hero-dialogue-box">
+                      <div className="mc-dialogue-quote-icon">
+                        <i className="bi bi-quote" />
+                      </div>
+                      <p className="mc-hero-dialogue-text">
+                        "Notice the tension releasing as you breathe out. That automatic thought is just a thought, not a fact."
+                      </p>
+                      <div className="mc-hero-dialogue-footer">
+                        <span className="mc-stress-shift-badge">
+                          <i className="bi bi-graph-down-arrow" /> Stress Index: <strong>-54%</strong>
+                        </span>
+                        <span className="mc-dialogue-modality">CBT De-escalation</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Footer: Feature & Assurance Chips */}
+                  <div className="mc-hero-card-chips">
+                    <span className="mc-hero-chip mc-chip-privacy">
+                      <i className="bi bi-incognito" /> Anonymous Mode
+                    </span>
+                    <span className="mc-hero-chip mc-chip-video">
+                      <i className="bi bi-camera-video-fill" /> Ultra HD Video
+                    </span>
+                    <span className="mc-hero-chip mc-chip-rating">
+                      <i className="bi bi-star-fill" /> 4.95 Rating
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
