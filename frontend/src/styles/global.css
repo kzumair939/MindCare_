@@ -101,7 +101,7 @@
 
 /* ---------- Reset ---------- */
 *, *::before, *::after { box-sizing:border-box; }
-html,body { height:100%; margin:0; }
+html,body { height:100%; margin:0; overflow-x:hidden; max-width:100vw; }
 body {
   background:var(--mc-bg);
   color:var(--mc-text);
@@ -122,6 +122,8 @@ img { max-width:100%; }
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .mc-authenticated-app {
@@ -1484,6 +1486,14 @@ img { max-width:100%; }
   width: 100%;
   height: 100%;
   border-radius: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.mc-3d-brain-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  display: block;
 }
 .mc-brain-floating-badge {
   position: absolute;
@@ -2038,18 +2048,54 @@ img { max-width:100%; }
 /* ==========================================================
    RESPONSIVE
    ========================================================== */
-@media (max-width: 900px) {
+@media (max-width: 992px) {
   .mc-auth-side { display:none; }
   .mc-auth-form-panel { padding:32px 20px; }
   .mc-auth-logo-mobile { display:flex; }
   .mc-auth-container { border-radius:0; min-height:100vh; }
 
-  .mc-landing-content { grid-template-columns:1fr; gap:32px; padding:48px 20px; text-align: center; }
-  .mc-landing-sub { margin-left: auto; margin-right: auto; }
-  .mc-landing-actions { justify-content: center; }
-  .mc-trust-row { justify-content: center; }
-  .mc-3d-brain-stage { height: 380px; }
-  .mc-brain-floating-badge { display: none; }
+  .mc-landing-content {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding: 44px 20px 40px;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+  }
+  .mc-landing-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+  }
+  .mc-landing-sub {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 580px;
+  }
+  .mc-landing-actions {
+    justify-content: center;
+  }
+  .mc-trust-row {
+    justify-content: center;
+  }
+  .mc-3d-brain-stage {
+    height: 380px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .mc-brain-floating-badge {
+    display: none !important;
+  }
+  .mc-landing-visual {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   .mc-feature-grid { grid-template-columns:repeat(2,1fr); }
   .mc-steps-grid { grid-template-columns:repeat(2,1fr); }
   .mc-steps-grid::before { display:none; }
@@ -2077,15 +2123,110 @@ img { max-width:100%; }
   .mc-nav-link { padding:10px 14px; }
 }
 
+@media (max-width: 768px) {
+  .mc-landing-hero {
+    padding: 24px 0 40px;
+    overflow-x: hidden;
+  }
+  .mc-landing-content {
+    padding: 28px 16px 36px;
+    gap: 28px;
+  }
+  .mc-landing-title {
+    font-size: clamp(1.85rem, 6.5vw, 2.6rem) !important;
+    line-height: 1.15 !important;
+    margin-bottom: 16px !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  .mc-landing-sub {
+    font-size: 0.98rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: 24px !important;
+  }
+  .mc-trust-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px 16px !important;
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 0 auto !important;
+    text-align: left !important;
+  }
+  .mc-trust-row span {
+    font-size: 0.82rem !important;
+    white-space: nowrap !important;
+  }
+  .mc-3d-brain-stage {
+    height: 310px;
+    max-width: 330px;
+  }
+}
+
 @media (max-width: 600px) {
+  .mc-landing-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 0 auto 28px !important;
+    gap: 12px !important;
+  }
+  .mc-btn-hero-primary,
+  .mc-btn-hero-outline {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    padding: 13px 18px !important;
+    font-size: 0.94rem !important;
+  }
+  .mc-3d-brain-stage {
+    height: 270px;
+    max-width: 290px;
+  }
+  .mc-neural-explorer-bar {
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .mc-neural-tag {
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    gap: 4px;
+  }
   .mc-feature-grid { grid-template-columns:1fr; }
   .mc-steps-grid { grid-template-columns:1fr; }
-  .mc-cta-box { padding:40px 24px; }
+  .mc-cta-box { padding:36px 18px; }
   .mc-cta-box h2 { font-size:1.5rem; }
   .mc-footer-inner { grid-template-columns:1fr; gap:24px; }
   .mc-hero-card { width:100%; }
-  .mc-landing-content { padding:40px 20px; }
   .mc-session-type-grid { flex-direction:column; }
+  .mc-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .mc-stat-item { padding: 18px 10px; }
+  .mc-stat-num { font-size: 1.7rem; }
+  .mc-stat-label { font-size: 0.75rem; }
+}
+
+@media (max-width: 380px) {
+  .mc-trust-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    max-width: 260px !important;
+  }
+  .mc-trust-row span {
+    justify-content: center;
+  }
+  .mc-landing-title {
+    font-size: 1.65rem !important;
+  }
+  .mc-hero-badge {
+    font-size: 0.72rem !important;
+    padding: 5px 10px !important;
+  }
+  .mc-3d-brain-stage {
+    height: 230px;
+    max-width: 250px;
+  }
 }
 
 /* ============================================================

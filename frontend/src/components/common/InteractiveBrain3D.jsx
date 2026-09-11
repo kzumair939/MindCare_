@@ -21,13 +21,13 @@ export default function InteractiveBrain3D({ activeMode = "all", className = "",
     if (!container) return;
 
     let animationFrameId;
-    let width = container.clientWidth || 500;
-    let height = container.clientHeight || 500;
+    let width = container.clientWidth || (window.innerWidth < 600 ? Math.min(window.innerWidth - 32, 340) : 500);
+    let height = container.clientHeight || (window.innerWidth < 600 ? 270 : 500);
 
     // 1. Scene & Camera
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 85;
+    camera.position.z = width < 480 ? 102 : (width < 768 ? 92 : 85);
 
     // 2. Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
@@ -322,9 +322,10 @@ export default function InteractiveBrain3D({ activeMode = "all", className = "",
 
     const handleResize = () => {
       if (!container) return;
-      width = container.clientWidth || 500;
-      height = container.clientHeight || 500;
+      width = container.clientWidth || (window.innerWidth < 600 ? Math.min(window.innerWidth - 32, 340) : 500);
+      height = container.clientHeight || (window.innerWidth < 600 ? 270 : 500);
       camera.aspect = width / height;
+      camera.position.z = width < 480 ? 102 : (width < 768 ? 92 : 85);
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
     };
@@ -429,7 +430,6 @@ export default function InteractiveBrain3D({ activeMode = "all", className = "",
       style={{
         width: "100%",
         height: "100%",
-        minHeight: "420px",
         position: "relative",
         overflow: "hidden",
         pointerEvents: "auto",

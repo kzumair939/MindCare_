@@ -162,28 +162,33 @@ export default function Landing() {
             {/* Left Hero Column */}
             <div className="mc-landing-text" style={{ zIndex: 5 }}>
               <div
-                className="mc-fade-up"
+                className="mc-fade-up mc-hero-badge"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "8px",
                   background: "rgba(99, 102, 241, 0.15)",
                   border: "1px solid rgba(99, 102, 241, 0.4)",
                   color: "#818cf8",
-                  padding: "6px 16px",
+                  padding: "6px 14px",
                   borderRadius: "99px",
-                  fontSize: "0.82rem",
+                  fontSize: "clamp(0.72rem, 2.8vw, 0.82rem)",
                   fontWeight: "700",
                   marginBottom: "20px",
-                  backdropFilter: "blur(10px)"
+                  backdropFilter: "blur(10px)",
+                  maxWidth: "100%",
+                  boxSizing: "border-box",
+                  textAlign: "center",
+                  lineHeight: "1.3"
                 }}
               >
-                <i className="bi bi-cpu-fill" style={{ color: "#38bdf8" }} />
+                <i className="bi bi-cpu-fill" style={{ color: "#38bdf8", flexShrink: 0 }} />
                 <span>Next-Gen Adaptive Mental Health Ecosystem</span>
               </div>
 
               <h1 className="mc-landing-title mc-fade-up mc-delay-1">
-                Rewire Your Mind with <br />
+                Rewire Your Mind with{" "}
                 <span className="mc-gradient-text">Clinical AI &amp; Expert Care.</span>
               </h1>
 
@@ -199,12 +204,13 @@ export default function Landing() {
                   style={{
                     background: "linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)",
                     color: "#ffffff",
-                    padding: "14px 28px",
+                    padding: "14px 24px",
                     borderRadius: "14px",
                     fontWeight: "700",
-                    fontSize: "1rem",
+                    fontSize: "0.98rem",
                     display: "inline-flex",
                     alignItems: "center",
+                    justifyContent: "center",
                     gap: "10px",
                     boxShadow: "0 10px 30px rgba(79, 70, 229, 0.4)",
                     textDecoration: "none"
@@ -220,12 +226,13 @@ export default function Landing() {
                     background: "rgba(255, 255, 255, 0.05)",
                     border: "1px solid rgba(255, 255, 255, 0.2)",
                     color: "#ffffff",
-                    padding: "14px 24px",
+                    padding: "14px 22px",
                     borderRadius: "14px",
                     fontWeight: "600",
-                    fontSize: "1rem",
+                    fontSize: "0.98rem",
                     display: "inline-flex",
                     alignItems: "center",
+                    justifyContent: "center",
                     gap: "8px",
                     backdropFilter: "blur(10px)",
                     textDecoration: "none"
@@ -343,12 +350,12 @@ export default function Landing() {
                 background: "rgba(15, 23, 42, 0.7)",
                 border: "1px solid rgba(255, 255, 255, 0.12)",
                 borderRadius: "24px",
-                padding: "36px",
+                padding: "clamp(20px, 4vw, 36px)",
                 boxShadow: "0 24px 60px rgba(0,0,0,0.4)",
                 backdropFilter: "blur(20px)"
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "18px", marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "18px", marginBottom: "24px", flexWrap: "wrap", gap: "12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: "linear-gradient(135deg, #4f46e5, #06b6d4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "1.2rem" }}>
                     <i className="bi bi-stars" />
@@ -417,7 +424,7 @@ export default function Landing() {
               </p>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "24px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "24px" }}>
               {MODALITIES.map((mod, idx) => (
                 <div
                   key={mod.code}
@@ -481,7 +488,7 @@ export default function Landing() {
               </p>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "24px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "24px" }}>
               {PLATFORM_FEATURES.map((feat, i) => (
                 <div
                   key={feat.title}
@@ -581,7 +588,7 @@ export default function Landing() {
                 background: "linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)",
                 border: "1px solid rgba(99, 102, 241, 0.3)",
                 borderRadius: "32px",
-                padding: "60px 40px",
+                padding: "clamp(36px, 6vw, 60px) clamp(18px, 4vw, 40px)",
                 textAlign: "center",
                 boxShadow: "0 24px 64px rgba(0, 0, 0, 0.5)",
                 position: "relative",
