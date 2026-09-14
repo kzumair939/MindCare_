@@ -15,17 +15,19 @@ public class Therapist {
 
     private String name;
     private String email;
-    private String specialization;
 
     @Column(length = 500)
+    private String specialization;
+
+    @Column(columnDefinition = "TEXT")
     private String specialties;
 
-    @Column(length = 300)
+    @Column(columnDefinition = "TEXT")
     private String languages;
 
     private Integer sessionPrice;
 
-    @Column(length = 200)
+    @Column(columnDefinition = "TEXT")
     private String availableDays;
 
     @Column(length = 200)
@@ -41,16 +43,14 @@ public class Therapist {
     private boolean active = true;
     private boolean senior = false;
 
-    // ======================
-    // Verification
-    // ======================
     private boolean verified = false;
+
+    @Column(columnDefinition = "TEXT")
     private String qualificationFilePath;
+
     private LocalDateTime verificationRequestedAt;
     private LocalDateTime verifiedAt;
 
-    // ======================
-    // Profile Picture
-    // ======================
+    @Column(columnDefinition = "TEXT")
     private String profilePicturePath;
 }
