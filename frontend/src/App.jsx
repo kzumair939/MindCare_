@@ -75,6 +75,7 @@ export default function App() {
 
           {/* Online session (USER + THERAPIST) */}
           <Route path="/session/:sessionId/online" element={<ProtectedRoute roles={["ROLE_USER","ROLE_THERAPIST"]}><OnlineSession/></ProtectedRoute>}/>
+          <Route path="/session/:sessionId" element={<ProtectedRoute roles={["ROLE_USER","ROLE_THERAPIST"]}><OnlineSession/></ProtectedRoute>}/>
 
           {/* Therapist */}
           <Route path="/therapist"          element={<ProtectedRoute roles={["ROLE_THERAPIST"]}><TherapistDash/></ProtectedRoute>}/>

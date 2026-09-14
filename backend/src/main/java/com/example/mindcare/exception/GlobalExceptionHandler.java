@@ -39,9 +39,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
     }
 
+    @ExceptionHandler(org.springframework.transaction.UnexpectedRollbackException.class)
+    public ResponseEntity<?> handleUnexpectedRollback(org.springframework.transaction.UnexpectedRollbackException e) {
+        Throwable cause = e.getMostSpecificCause();
+        String msg = cause != null && cause.getMessage() != null ? cause.getMessage() : "Transaction rolled back";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", msg));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneral(Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Internal server error"));
+        Throwable cause = e.getCause() != null ? e.getCause() : e;
+        String msg = cause != null && cause.getMessage() != null ? cause.getMessage() : "Internal server error";
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", msg));
     }
 }
 

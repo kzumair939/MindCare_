@@ -49,6 +49,17 @@ public class AdminUserInitializer implements ApplicationRunner {
                 System.out.println("[MindCare] Admin user created & enabled: " + adminUsername);
             }
         );
+
+        // Ensure Hamdan therapist user account is enabled and has valid password
+        userRepository.findByUsername("Hamdan").ifPresent(hamdan -> {
+            hamdan.setEmail("hamdan@gmail.com");
+            hamdan.setDisplayName("Hamdan");
+            hamdan.setEnabled(true);
+            hamdan.setBlocked(false);
+            hamdan.setPassword(passwordEncoder.encode("admin123"));
+            userRepository.save(hamdan);
+            log.info("[MindCare] Therapist Hamdan user verified and password set to admin123");
+        });
     }
 
 }

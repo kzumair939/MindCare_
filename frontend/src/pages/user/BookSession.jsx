@@ -26,7 +26,7 @@ function formatSlotTime(time24) {
 }
 
 export default function BookSession() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const nav = useNavigate();
   const { cachedFetch, invalidate } = useCache();
   const [therapists, setTherapists] = useState([]);
@@ -42,6 +42,12 @@ export default function BookSession() {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const freeLeft = Math.max(0, 2 - (user?.freeSessionsUsed || 0));
+
+  useEffect(() => {
+    if (typeof refreshUser === "function") {
+      refreshUser().catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     // Cache the therapist list for 5 minutes — it rarely changes
@@ -104,6 +110,14 @@ export default function BookSession() {
     if (!form.date) errs.date = "Please choose a date";
     if (form.date && form.date < today()) errs.date = "Date cannot be in the past";
     if (!form.time) errs.time = "Please select a time slot";
+    if (form.date && form.time) {
+      const now = new Date();
+      const [h, m] = form.time.split(":").map(Number);
+      const slotDateTime = new Date(`${form.date}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`);
+      if (slotDateTime <= now) {
+        errs.time = "This time slot has already passed. Please select an upcoming slot.";
+      }
+    }
     // Validate selected day is available
     if (selected && form.date && selected.availableDays) {
       const dayName = new Date(form.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
@@ -151,11 +165,17 @@ export default function BookSession() {
           </div>
         </section>
 
-        {freeLeft > 0 && (
+        {freeLeft > 0 ? (
           <div className="mc-free-banner mc-animate-in" style={anim(0.1)}>
             <i className="bi bi-gift-fill me-2"/>
             <strong>{freeLeft} free session{freeLeft > 1 ? "s" : ""} remaining!</strong>
             <span className="ms-2 opacity-75">No payment needed for your first {freeLeft === 2 ? "two sessions" : "session"}.</span>
+          </div>
+        ) : (
+          <div className="mc-free-banner mc-animate-in" style={{ ...anim(0.1), background: "rgba(100,116,139,0.08)", borderColor: "var(--mc-border)", color: "var(--mc-muted)" }}>
+            <i className="bi bi-info-circle-fill me-2 text-primary"/>
+            <strong style={{ color: "var(--mc-text)" }}>0 free sessions remaining</strong>
+            <span className="ms-2 opacity-75">• Introductory free credits used. Standard therapist rate applies upon checkout.</span>
           </div>
         )}
 
@@ -313,7 +333,7 @@ export default function BookSession() {
                             <span className="mc-slot-dot mc-slot-dot-free"/>Available
                           </span>
                           <span className="mc-slot-legend-item">
-                            <span className="mc-slot-dot mc-slot-dot-booked"/>Booked
+                            <span className="mc-slot-dot mc-slot-dot-booked"/>Booked / Passed
                           </span>
                         </div>
                       </div>
@@ -333,6 +353,7 @@ export default function BookSession() {
                         <div className="mc-slot-grid">
                           {slots.map(slot => {
                             const isSelected = form.time === slot.time;
+                            const isPast = slot.reason === "PAST";
                             return (
                               <button
                                 key={slot.time}
@@ -345,11 +366,15 @@ export default function BookSession() {
                                 ].filter(Boolean).join(" ")}
                                 onClick={() => selectSlot(slot)}
                                 disabled={!slot.available}
-                                title={slot.available ? `Book ${formatSlotTime(slot.time)}` : "Already booked"}
+                                title={slot.available ? `Book ${formatSlotTime(slot.time)}` : (isPast ? "Time slot has passed" : "Already booked")}
                               >
-                                <i className={`bi bi-${slot.available ? "clock" : "lock-fill"}`}/>
+                                <i className={`bi bi-${slot.available ? "clock" : (isPast ? "clock-history" : "lock-fill")}`}/>
                                 <span className="mc-slot-time">{formatSlotTime(slot.time)}</span>
-                                {!slot.available && <span className="mc-slot-badge">Booked</span>}
+                                {!slot.available && (
+                                  <span className="mc-slot-badge">
+                                    {isPast ? "Passed" : "Booked"}
+                                  </span>
+                                )}
                                 {isSelected && <span className="mc-slot-badge mc-slot-badge--sel"><i className="bi bi-check-lg"/></span>}
                               </button>
                             );
@@ -411,10 +436,20 @@ export default function BookSession() {
               <div className="mc-summary-row mc-summary-total">
                 <span>Estimated Cost</span>
                 <strong className="mc-summary-price">
-                  {freeLeft > 0 ? <span className="mc-price-free"><i className="bi bi-gift me-1"/>Free</span> : selected?.sessionPrice ? `$${selected.sessionPrice}` : "—"}
+                  {freeLeft > 0 ? (
+                    <span className="mc-price-free"><i className="bi bi-gift me-1"/>Free</span>
+                  ) : (
+                    selected?.sessionPrice ? `$${selected.sessionPrice}` : "$50"
+                  )}
                 </strong>
               </div>
-              {freeLeft > 0 && <div className="mc-summary-free-note"><i className="bi bi-check-circle-fill me-1"/>Free session applied</div>}
+              {freeLeft > 0 ? (
+                <div className="mc-summary-free-note"><i className="bi bi-check-circle-fill me-1"/>Free session credit applied</div>
+              ) : (
+                <div className="mc-summary-free-note" style={{ color: "var(--mc-muted)", background: "rgba(100,116,139,0.08)", borderColor: "var(--mc-border)" }}>
+                  <i className="bi bi-credit-card me-1"/>Standard rate upon checkout
+                </div>
+              )}
             </div>
 
             {/* Slot availability legend card */}

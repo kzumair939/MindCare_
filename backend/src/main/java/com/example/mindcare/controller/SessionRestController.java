@@ -25,12 +25,9 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.transaction.annotation.Transactional;
-
 @RestController
 @RequestMapping("/api/session")
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class SessionRestController {
     private final SessionService sessionService;
     private final SessionRepository sessionRepository;
@@ -152,15 +149,22 @@ public class SessionRestController {
             LocalTime cursor = start;
             LocalTime previous = null;
             int safetyCounter = 0;
+            LocalDate today = LocalDate.now();
+            LocalTime nowTime = LocalTime.now();
+
             while (!cursor.isAfter(end.minusMinutes(30)) && safetyCounter < 24) {
                 if (previous != null && !cursor.isAfter(previous)) {
                     break;
                 }
                 safetyCounter++;
                 String slotTime = cursor.format(DateTimeFormatter.ofPattern("HH:mm"));
+                boolean isBooked = bookedTimes.contains(slotTime);
+                boolean isPast = localDate.isBefore(today) || (localDate.isEqual(today) && cursor.isBefore(nowTime));
+
                 Map<String, Object> slot = new LinkedHashMap<>();
                 slot.put("time", slotTime);
-                slot.put("available", !bookedTimes.contains(slotTime));
+                slot.put("available", !isBooked && !isPast);
+                slot.put("reason", isPast ? "PAST" : (isBooked ? "BOOKED" : "AVAILABLE"));
                 slots.add(slot);
 
                 previous = cursor;
@@ -172,7 +176,8 @@ public class SessionRestController {
                     "date", date,
                     "slots", slots));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            return ResponseEntity.badRequest().body(Map.of("error", cause.getMessage() != null ? cause.getMessage() : "Error loading slots"));
         }
     }
 
@@ -226,7 +231,8 @@ public class SessionRestController {
                     null, false);
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            return ResponseEntity.badRequest().body(Map.of("error", cause.getMessage() != null ? cause.getMessage() : "Booking failed"));
         }
     }
 
@@ -330,7 +336,11 @@ public class SessionRestController {
         info.put("sessionTime", s.getSessionTime() != null ? s.getSessionTime().toString() : null);
         info.put("sessionType", s.getSessionType());
         info.put("therapyType", s.getTherapyType() != null ? s.getTherapyType().name() : null);
+        info.put("feeAmount", s.getFeeAmount() != null ? s.getFeeAmount() : (s.getTherapist() != null && s.getTherapist().getSessionPrice() != null ? s.getTherapist().getSessionPrice() : 50));
+        info.put("therapistId", s.getTherapist() != null ? s.getTherapist().getId() : null);
         info.put("therapistName", s.getTherapist() != null ? s.getTherapist().getName() : "Therapist");
+        info.put("therapistSpecialization", s.getTherapist() != null ? s.getTherapist().getSpecialization() : "Mental Health Professional");
+        info.put("therapistPicturePath", s.getTherapist() != null ? s.getTherapist().getProfilePicturePath() : null);
         info.put("userName", s.getUser() != null
                 ? (s.getUser().getDisplayName() != null ? s.getUser().getDisplayName() : s.getUser().getUsername())
                 : "Patient");

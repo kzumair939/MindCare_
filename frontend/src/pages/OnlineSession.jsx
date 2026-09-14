@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api, { getWsUrl } from "../api/axios";
+import "../styles/session-call.css";
 
 export default function OnlineSession() {
   const { sessionId: id } = useParams();
@@ -17,139 +18,274 @@ export default function OnlineSession() {
   const [ending, setEnding] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [connected, setConnected] = useState(false);
-  const [layout, setLayout] = useState("split"); // split | focus-remote | focus-local
   const [hasLeft, setHasLeft] = useState(false);
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const localVideoRef  = useRef();
-  const remoteVideoRef = useRef();
-  const pcRef          = useRef();
-  const wsRef          = useRef();
-  const streamRef      = useRef();
-  const typingTimer    = useRef();
-  const timerRef       = useRef();
-  const bottomRef      = useRef();
+  const TOTAL_SESSION_SECONDS = 60 * 60;
+  const timerStartKey = `mindcare_session_timer_start_${id}`;
+  
+  const [remainingSeconds, setRemainingSeconds] = useState(() => {
+    const savedStart = localStorage.getItem(timerStartKey);
+    if (savedStart) {
+      const passed = Math.floor((Date.now() - parseInt(savedStart, 10)) / 1000);
+      return Math.max(0, TOTAL_SESSION_SECONDS - passed);
+    }
+    return TOTAL_SESSION_SECONDS;
+  });
+
+  const [pipPos, setPipPos] = useState({ x: null, y: null });
+  const isDraggingRef = useRef(false);
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+
+  const [activeDrawer, setActiveDrawer] = useState(null);
+
+  const notesStorageKey = `mindcare_notes_${id}_${user?.username || "user"}`;
+  const [privateNotes, setPrivateNotes] = useState(() => {
+    return localStorage.getItem(notesStorageKey) || "";
+  });
+  const [notesSaveStatus, setNotesSaveStatus] = useState("Saved");
+
+  const localVideoRef     = useRef(null);
+  const remoteVideoRef    = useRef(null);
+  const localPipVideoRef  = useRef(null);
+  const remotePipVideoRef = useRef(null);
+  const pcRef             = useRef(null);
+  const wsRef             = useRef(null);
+  const streamRef         = useRef(null);
+  const remoteStreamRef   = useRef(null);
+  const typingTimer       = useRef(null);
+  const bottomRef         = useRef(null);
+  const saveTimeoutRef    = useRef(null);
 
   const isTherapist = user?.role === "ROLE_THERAPIST";
 
   useEffect(() => {
-    api.get(`/session/${id}`).then(r => setSession(r.data)).catch(()=>{});
-    api.get(`/session/${id}/messages`).catch(()=>({data:[]})).then(r => setMessages(r.data||[]));
+    api.get(`/session/${id}`).then(r => setSession(r.data)).catch(() => {});
+    api.get(`/session/${id}/messages`).catch(() => ({ data: [] })).then(r => setMessages(r.data || []));
   }, [id]);
 
-  // Timer
   useEffect(() => {
-    timerRef.current = setInterval(() => setElapsed(e => e+1), 1000);
-    return () => clearInterval(timerRef.current);
-  }, []);
+    if (!connected) return;
 
-  // WebRTC setup
+    if (!localStorage.getItem(timerStartKey)) {
+      localStorage.setItem(timerStartKey, Date.now().toString());
+    }
+
+    const tick = () => {
+      const startTs = parseInt(localStorage.getItem(timerStartKey) || Date.now().toString(), 10);
+      const passed = Math.floor((Date.now() - startTs) / 1000);
+      const left = Math.max(0, TOTAL_SESSION_SECONDS - passed);
+      setRemainingSeconds(left);
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [connected, id, timerStartKey]);
+
+  function handlePipPointerDown(e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    isDraggingRef.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const rect = e.currentTarget.getBoundingClientRect();
+    dragOffsetRef.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  }
+
+  function handlePipPointerMove(e) {
+    if (!isDraggingRef.current) return;
+    const newX = e.clientX - dragOffsetRef.current.x;
+    const newY = e.clientY - dragOffsetRef.current.y;
+
+    const maxX = window.innerWidth - 130;
+    const maxY = window.innerHeight - 175;
+    const clampedX = Math.max(8, Math.min(newX, maxX));
+    const clampedY = Math.max(54, Math.min(newY, maxY));
+
+    setPipPos({ x: clampedX, y: clampedY });
+  }
+
+  function handlePipPointerUp(e) {
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+    }
+  }
+
+  useEffect(() => {
+    if (streamRef.current) {
+      if (localVideoRef.current) localVideoRef.current.srcObject = streamRef.current;
+      if (localPipVideoRef.current) localPipVideoRef.current.srcObject = streamRef.current;
+    }
+    if (remoteStreamRef.current) {
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStreamRef.current;
+      if (remotePipVideoRef.current) remotePipVideoRef.current.srcObject = remoteStreamRef.current;
+    }
+  }, [activeDrawer, connected]);
+
+  function handleNotesChange(e) {
+    const val = e.target.value;
+    setPrivateNotes(val);
+    setNotesSaveStatus("Saving...");
+    clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      localStorage.setItem(notesStorageKey, val);
+      setNotesSaveStatus("Saved privately");
+    }, 600);
+  }
+
   useEffect(() => {
     if (hasLeft) return;
 
-    let cancelled = false;
+    let isDisposed = false;
     const iceQueue = [];
-    async function setup() {
-      let stream = null;
+
+    async function initCall() {
+      let localStream = null;
       try {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
-          streamRef.current = stream;
-          if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+          localStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: true
+          });
+          streamRef.current = localStream;
+          if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+          if (localPipVideoRef.current) localPipVideoRef.current.srcObject = localStream;
         }
-      } catch(err) {
-        console.warn("Camera/mic access denied or unavailable, connecting as chat/receive-only:", err);
+      } catch (err) {
+        console.warn("Camera/mic access unavailable, continuing in receive-only mode:", err);
       }
 
-      try {
-        const pc = new RTCPeerConnection({ iceServers:[{urls:"stun:stun.l.google.com:19302"}] });
-        pcRef.current = pc;
-        if (stream) {
-          stream.getTracks().forEach(t => pc.addTrack(t, stream));
+      if (isDisposed) return;
+
+      const pc = new RTCPeerConnection({
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" }
+        ]
+      });
+      pcRef.current = pc;
+
+      if (localStream) {
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+      } else {
+        pc.addTransceiver("video", { direction: "recvonly" });
+        pc.addTransceiver("audio", { direction: "recvonly" });
+      }
+
+      pc.ontrack = (event) => {
+        if (event.streams?.[0]) {
+          remoteStreamRef.current = event.streams[0];
+          if (remoteVideoRef.current) remoteVideoRef.current.srcObject = event.streams[0];
+          if (remotePipVideoRef.current) remotePipVideoRef.current.srcObject = event.streams[0];
         }
+        setConnected(true);
+      };
 
-        pc.ontrack = e => {
-          if (remoteVideoRef.current) remoteVideoRef.current.srcObject = e.streams[0];
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === "connected") {
           setConnected(true);
-        };
+        } else if (["disconnected", "failed", "closed"].includes(pc.connectionState)) {
+          setConnected(false);
+        }
+      };
 
-        const token = localStorage.getItem("mc_token");
-        const ws = new WebSocket(getWsUrl(`/ws/session/${id}?token=${token}`));
-        wsRef.current = ws;
+      const token = localStorage.getItem("mc_token");
+      const ws = new WebSocket(getWsUrl(`/ws/session/${id}?token=${token}`));
+      wsRef.current = ws;
 
-        ws.onopen = async () => {
-          console.log("WebSocket connection open");
-        };
+      pc.onicecandidate = (event) => {
+        if (event.candidate && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "ice", candidate: event.candidate }));
+        }
+      };
 
-        ws.onmessage = async (e) => {
-          const data = JSON.parse(e.data);
-          if (data.type === "peer-joined") {
-            try {
-              const offer = await pc.createOffer();
-              await pc.setLocalDescription(offer);
-              ws.send(JSON.stringify({ type: "offer", sdp: pc.localDescription }));
-            } catch (err) {
-              console.error("Error creating offer:", err);
-            }
+      async function createOffer() {
+        try {
+          const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+          await pc.setLocalDescription(offer);
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "offer", sdp: pc.localDescription }));
+          }
+        } catch (e) {
+          console.error("Error creating WebRTC offer:", e);
+        }
+      }
+
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ type: "peer-ready" }));
+      };
+
+      ws.onmessage = async (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.type === "peer-joined" || data.type === "peer-ready") {
+            await createOffer();
           } else if (data.type === "offer") {
-            try {
-              await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-              const answer = await pc.createAnswer();
-              await pc.setLocalDescription(answer);
+            await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            if (ws.readyState === WebSocket.OPEN) {
               ws.send(JSON.stringify({ type: "answer", sdp: pc.localDescription }));
-              while (iceQueue.length > 0) {
-                const cand = iceQueue.shift();
-                await pc.addIceCandidate(cand).catch(()=>{});
-              }
-            } catch (err) {
-              console.error("Error handling offer:", err);
             }
+            while (iceQueue.length > 0) {
+              const cand = iceQueue.shift();
+              await pc.addIceCandidate(cand).catch(console.warn);
+            }
+            setConnected(true);
           } else if (data.type === "answer") {
-            try {
-              await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-              while (iceQueue.length > 0) {
-                const cand = iceQueue.shift();
-                await pc.addIceCandidate(cand).catch(()=>{});
-              }
-            } catch (err) {
-              console.error("Error handling answer:", err);
+            await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+            while (iceQueue.length > 0) {
+              const cand = iceQueue.shift();
+              await pc.addIceCandidate(cand).catch(console.warn);
             }
+            setConnected(true);
           } else if (data.type === "ice") {
             const candidate = new RTCIceCandidate(data.candidate);
-            if (pc.remoteDescription) {
-              await pc.addIceCandidate(candidate).catch(()=>{});
+            if (pc.remoteDescription?.type) {
+              await pc.addIceCandidate(candidate).catch(console.warn);
             } else {
               iceQueue.push(candidate);
             }
           } else if (data.type === "peer-left") {
+            remoteStreamRef.current = null;
             if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+            if (remotePipVideoRef.current) remotePipVideoRef.current.srcObject = null;
             setConnected(false);
           } else if (data.type === "chat") {
             setMessages(prev => [...prev, { ...data.message, mine: false }]);
+            if (activeDrawer !== "chat") {
+              setUnreadCount(c => c + 1);
+            }
           } else if (data.type === "typing") {
             setTyping(data.isTyping);
           }
-        };
-
-        pc.onicecandidate = e => {
-          if (e.candidate && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type:"ice", candidate: e.candidate }));
-          }
-        };
-      } catch(err) {
-        console.error("Failed to setup session signaling connection:", err);
-      }
+        } catch (err) {
+          console.error("Signaling payload error:", err);
+        }
+      };
     }
-    setup();
+
+    initCall();
+
     return () => {
-      cancelled = true;
+      isDisposed = true;
       streamRef.current?.getTracks().forEach(t => t.stop());
       pcRef.current?.close();
       wsRef.current?.close();
     };
   }, [id, hasLeft]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({behavior:"smooth"}); }, [messages, typing]);
+  // Keep chat scrolled to recent messages
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, typing, activeDrawer]);
 
   function toggleMic() {
     const enabled = !micOn;
@@ -165,27 +301,45 @@ export default function OnlineSession() {
 
   async function sendChat(e) {
     e?.preventDefault();
-    const content = text.trim(); if (!content) return;
+    const content = text.trim();
+    if (!content) return;
     setText("");
-    const msg = { sender: user?.displayName||user?.username||"You", content, ts: new Date().toISOString(), mine:true };
+    const msg = {
+      sender: user?.displayName || user?.username || "You",
+      content,
+      ts: new Date().toISOString(),
+      mine: true
+    };
     setMessages(prev => [...prev, msg]);
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type:"chat", message:msg }));
+      wsRef.current.send(JSON.stringify({ type: "chat", message: msg }));
     }
   }
 
   function handleChatKey(e) {
-    if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendChat();
+    }
   }
 
   function handleTyping(e) {
     setText(e.target.value);
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type:"typing", isTyping:true }));
+      wsRef.current.send(JSON.stringify({ type: "typing", isTyping: true }));
       clearTimeout(typingTimer.current);
-      typingTimer.current = setTimeout(()=>{
-        wsRef.current?.send(JSON.stringify({ type:"typing", isTyping:false }));
+      typingTimer.current = setTimeout(() => {
+        wsRef.current?.send(JSON.stringify({ type: "typing", isTyping: false }));
       }, 1500);
+    }
+  }
+
+  function toggleDrawer(tab) {
+    if (activeDrawer === tab) {
+      setActiveDrawer(null);
+    } else {
+      setActiveDrawer(tab);
+      if (tab === "chat") setUnreadCount(0);
     }
   }
 
@@ -198,13 +352,14 @@ export default function OnlineSession() {
     setConnected(false);
   }
 
-  function formatElapsed(s) {
-    const m = Math.floor(s/60); const sec = s%60;
-    return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+  function formatCountdown(totalSecs) {
+    const m = Math.floor(totalSecs / 60);
+    const sec = totalSecs % 60;
+    return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   }
 
   function formatTime(ts) {
-    return ts ? new Date(ts).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}) : "";
+    return ts ? new Date(ts).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "";
   }
 
   if (hasLeft) {
@@ -214,8 +369,8 @@ export default function OnlineSession() {
           <div className="mc-session-ended-icon">
             <i className="bi bi-telephone-x-fill" />
           </div>
-          <h2>Call Disconnected</h2>
-          <p>You have left the video session call.</p>
+          <h2>Session Disconnected</h2>
+          <p>You have left the live video session.</p>
           
           <div className="mc-session-ended-actions">
             <button className="mc-btn-primary" onClick={() => setHasLeft(false)}>
@@ -251,144 +406,291 @@ export default function OnlineSession() {
     );
   }
 
+  const peerDisplayName = session ? (isTherapist ? session.userName : session.therapistName) : (isTherapist ? "Patient" : "Therapist");
+
   return (
     <div className="mc-session-page">
-      {/* Top bar */}
-      <div className="mc-session-topbar">
+      <header className="mc-session-topbar">
         <div className="mc-session-topbar-left">
-          <i className="bi bi-heart-pulse-fill mc-brand-mark"/>
-          <span className="mc-session-room-name">
-            {session ? `Session with ${isTherapist ? session.userName : session.therapistName}` : "Connecting…"}
-          </span>
-        </div>
-        <div className="mc-session-topbar-center">
-          <div className={`mc-session-status-dot ${connected?"connected":""}`}/>
-          <span className="mc-session-timer">{formatElapsed(elapsed)}</span>
-          {connected && <span className="mc-session-connected-badge">Connected</span>}
-        </div>
-        <div className="mc-session-topbar-right">
-          <button className="mc-session-layout-btn" onClick={()=>setLayout(l => l==="split"?"focus-remote":"split")} title="Toggle layout">
-            <i className={`bi bi-${layout==="split"?"fullscreen":"fullscreen-exit"}`}/>
-          </button>
-        </div>
-      </div>
-
-      <div className="mc-session-body">
-        {/* Video area */}
-        <div className={`mc-video-area mc-layout-${layout}`}>
-          {/* Remote video */}
-          <div className="mc-video-tile mc-remote-tile">
-            <video ref={remoteVideoRef} autoPlay playsInline className="mc-video-el"/>
-            {!connected && (
-              <div className="mc-video-waiting">
-                <div className="mc-waiting-avatar">
-                  <i className="bi bi-person-circle"/>
-                </div>
-                <div className="mc-waiting-pulse"/>
-                <p>Waiting for {isTherapist ? "patient" : "therapist"} to join…</p>
-              </div>
-            )}
-            <div className="mc-video-label mc-remote-label">
-              {session ? (isTherapist ? session.userName : session.therapistName) : "Remote"}
+          <i className="bi bi-heart-pulse-fill mc-brand-mark" />
+          <div className="mc-session-title-wrap">
+            <span className="mc-session-room-name">
+              {session ? `Session with ${peerDisplayName}` : "Connecting session…"}
+            </span>
+            <div className="mc-session-status-sub">
+              <span className={`mc-session-status-dot ${connected ? "connected" : ""}`} />
+              <span className="mc-session-status-text">
+                {connected ? "Live Session" : "Waiting for peer…"}
+              </span>
             </div>
           </div>
+        </div>
 
-          {/* Local video (PiP) */}
-          <div className="mc-video-tile mc-local-tile">
-            <video ref={localVideoRef} autoPlay playsInline muted className="mc-video-el"/>
-            {!camOn && (
-              <div className="mc-cam-off">
-                <i className="bi bi-camera-video-off-fill"/>
+        <div className="mc-session-topbar-center">
+          <span className="mc-session-timer">{formatCountdown(remainingSeconds)}</span>
+          {connected && (
+            <span className="mc-session-connected-badge">
+              <i className="bi bi-shield-check" /> Connected
+            </span>
+          )}
+        </div>
+
+        <div className="mc-session-topbar-right">
+          <button
+            className={`mc-topbar-action-btn ${activeDrawer === "chat" ? "active" : ""}`}
+            onClick={() => toggleDrawer("chat")}
+            title="Toggle Live Chat"
+          >
+            <i className="bi bi-chat-dots-fill" />
+            <span className="d-none d-sm-inline">Chat</span>
+            {unreadCount > 0 && <span className="mc-pill-badge">{unreadCount}</span>}
+          </button>
+
+          <button
+            className={`mc-topbar-action-btn ${activeDrawer === "notes" ? "active" : ""}`}
+            onClick={() => toggleDrawer("notes")}
+            title="Toggle Private Notes"
+          >
+            <i className="bi bi-journal-text" />
+            <span className="d-none d-sm-inline">Notes</span>
+          </button>
+        </div>
+      </header>
+
+      <main className={`mc-session-stage ${activeDrawer ? "drawer-open" : ""}`}>
+        <div className="mc-remote-video-container">
+          <video ref={remoteVideoRef} autoPlay playsInline className="mc-remote-video-el" />
+
+          {!connected && (
+            <div className="mc-video-waiting-screen">
+              <div className="mc-waiting-avatar-ring">
+                <i className="bi bi-person-circle" />
+                <div className="mc-waiting-glow-pulse" />
               </div>
-            )}
-            <div className="mc-video-label mc-local-label">You</div>
-          </div>
+              <h3>Waiting for {isTherapist ? "patient" : "therapist"} to connect</h3>
+              <p>The live video will appear automatically once both participants are in the room.</p>
+            </div>
+          )}
 
-          {/* Controls */}
-          <div className="mc-video-controls">
-            <button className={`mc-ctrl-btn mc-ctrl-media${micOn?"":" off"}`} onClick={toggleMic} title={micOn?"Mute":"Unmute"}>
-              <i className={`bi bi-mic${micOn?"":"-mute"}-fill`}/>
-              <span>{micOn?"Mute":"Unmute"}</span>
-            </button>
-            <button className={`mc-ctrl-btn mc-ctrl-media${camOn?"":" off"}`} onClick={toggleCam} title={camOn?"Stop Camera":"Start Camera"}>
-              <i className={`bi bi-camera-video${camOn?"":"-off"}-fill`}/>
-              <span>{camOn?"Camera":"No Cam"}</span>
-            </button>
-            <button className="mc-ctrl-btn mc-ctrl-end" onClick={() => setShowConfirmLeave(true)} disabled={ending}>
-              {ending ? <span className="spinner-border spinner-border-sm"/> : <i className="bi bi-telephone-x-fill"/>}
-              <span>End</span>
-            </button>
+          <div className="mc-participant-badge">
+            <i className="bi bi-person-fill" />
+            <span>{peerDisplayName}</span>
           </div>
         </div>
 
-        {/* Chat sidebar */}
-        <div className="mc-session-chat">
-          <div className="mc-session-chat-header">
-            <i className="bi bi-chat-dots me-2"/>Session Chat
+        <div className={`mc-local-pip-box ${activeDrawer ? "drawer-active" : ""}`}>
+          <video ref={localVideoRef} autoPlay playsInline muted className="mc-local-video-el" />
+          {!camOn && (
+            <div className="mc-local-cam-disabled">
+              <i className="bi bi-camera-video-off-fill" />
+            </div>
+          )}
+          <div className="mc-local-pip-tag">
+            <span className="mc-live-indicator-dot" />
+            <span>You</span>
           </div>
+        </div>
 
-          <div className="mc-session-chat-messages">
-            {messages.length === 0 && (
-              <div className="mc-chat-empty">
-                <i className="bi bi-chat-heart"/>
-                <p>Chat with your {isTherapist?"patient":"therapist"} here</p>
+        {activeDrawer && (
+          <div
+            className="mc-call-pip-float-wrapper mc-pip-draggable"
+            style={
+              pipPos.x !== null && pipPos.y !== null
+                ? {
+                    left: `${pipPos.x}px`,
+                    top: `${pipPos.y}px`,
+                    right: "auto",
+                    bottom: "auto",
+                    touchAction: "none",
+                  }
+                : { touchAction: "none" }
+            }
+            onPointerDown={handlePipPointerDown}
+            onPointerMove={handlePipPointerMove}
+            onPointerUp={handlePipPointerUp}
+            onPointerCancel={handlePipPointerUp}
+          >
+            <video ref={remotePipVideoRef} autoPlay playsInline className="mc-pip-remote-feed" />
+            
+            {!connected && (
+              <div className="mc-pip-waiting-hint">
+                <i className="bi bi-person-video" />
+                <span>Waiting for {peerDisplayName}...</span>
               </div>
             )}
-            {messages.map((m, i) => (
-              <div key={i} className={`mc-session-msg${m.mine?" mine":""}`}>
-                {!m.mine && <div className="mc-session-msg-sender">{m.sender||"Therapist"}</div>}
-                <div className="mc-session-msg-bubble">{m.content}</div>
-                <div className="mc-session-msg-time">{formatTime(m.ts||m.createdAt)}</div>
+
+            <div className="mc-pip-header-tag">
+              <i className="bi bi-arrows-move me-1" />
+              <span>{peerDisplayName}</span>
+            </div>
+
+            <div className="mc-pip-local-inset">
+              <video ref={localPipVideoRef} autoPlay playsInline muted />
+            </div>
+          </div>
+        )}
+
+        <aside className={`mc-side-panel-drawer ${activeDrawer ? "expanded" : "collapsed"}`}>
+          <div className="mc-drawer-header">
+            <div className="mc-drawer-tabs">
+              <button
+                className={`mc-drawer-tab-btn ${activeDrawer === "chat" ? "active" : ""}`}
+                onClick={() => { setActiveDrawer("chat"); setUnreadCount(0); }}
+              >
+                <i className="bi bi-chat-dots-fill" /> Chat
+                {unreadCount > 0 && <span className="mc-pill-badge ms-1">{unreadCount}</span>}
+              </button>
+              <button
+                className={`mc-drawer-tab-btn ${activeDrawer === "notes" ? "active" : ""}`}
+                onClick={() => setActiveDrawer("notes")}
+              >
+                <i className="bi bi-journal-text" /> Private Notes
+              </button>
+            </div>
+            <button
+              className="mc-drawer-close-btn"
+              onClick={() => setActiveDrawer(null)}
+              title="Close Panel and Return to Fullscreen Video"
+            >
+              <i className="bi bi-x-lg" />
+            </button>
+          </div>
+
+          {activeDrawer === "chat" && (
+            <div className="mc-drawer-chat-body">
+              <div className="mc-chat-messages-container">
+                {messages.length === 0 ? (
+                  <div className="mc-chat-empty-state">
+                    <i className="bi bi-chat-square-heart-fill" />
+                    <p>Encrypted live chat with {peerDisplayName}</p>
+                  </div>
+                ) : (
+                  messages.map((m, idx) => (
+                    <div key={idx} className={`mc-chat-bubble-wrap ${m.mine ? "mine" : ""}`}>
+                      {!m.mine && <div className="mc-chat-sender-name">{m.sender || peerDisplayName}</div>}
+                      <div className="mc-chat-bubble">{m.content}</div>
+                      <div className="mc-chat-timestamp">{formatTime(m.ts || m.createdAt)}</div>
+                    </div>
+                  ))
+                )}
+                {typing && (
+                  <div className="mc-typing-indicator-row">
+                    <div className="mc-typing-dots">
+                      <span className="mc-typing-dot" />
+                      <span className="mc-typing-dot" />
+                      <span className="mc-typing-dot" />
+                    </div>
+                  </div>
+                )}
+                <div ref={bottomRef} />
               </div>
-            ))}
-            {typing && (
-              <div className="mc-typing-indicator">
-                <div className="mc-typing-bubble">
-                  <span className="mc-typing-dot"/><span className="mc-typing-dot"/><span className="mc-typing-dot"/>
+
+              <div className="mc-drawer-chat-input-bar">
+                <textarea
+                  className="mc-chat-compose-textarea"
+                  placeholder="Type a message..."
+                  value={text}
+                  onChange={handleTyping}
+                  onKeyDown={handleChatKey}
+                  rows={1}
+                />
+                <button
+                  className="mc-chat-send-action-btn"
+                  onClick={sendChat}
+                  disabled={!text.trim()}
+                  title="Send message"
+                >
+                  <i className="bi bi-send-fill" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeDrawer === "notes" && (
+            <div className="mc-drawer-notes-body">
+              <div className="mc-notes-banner">
+                <div className="mc-notes-banner-left">
+                  <i className="bi bi-shield-lock-fill" />
+                  <span>Private Session Notes</span>
                 </div>
-                <span className="mc-typing-label">typing…</span>
+                <span className="mc-notes-status-saved">{notesSaveStatus}</span>
               </div>
-            )}
-            <div ref={bottomRef}/>
-          </div>
+              <textarea
+                className="mc-notes-editor-textarea"
+                placeholder={isTherapist ? "Write private clinical observations, session goals, or patient notes here..." : "Write your personal thoughts, reflections, or questions for this session..."}
+                value={privateNotes}
+                onChange={handleNotesChange}
+              />
+              <div className="mc-notes-footer-hint">
+                <i className="bi bi-info-circle me-1" />
+                These notes are encrypted & visible only to your account.
+              </div>
+            </div>
+          )}
+        </aside>
 
-          <div className="mc-session-chat-input">
-            <textarea
-              className="mc-chat-textarea"
-              placeholder="Send a message…"
-              value={text}
-              onChange={handleTyping}
-              onKeyDown={handleChatKey}
-              rows={1}
-            />
-            <button className="mc-chat-send-btn" onClick={sendChat} disabled={!text.trim()}>
-              <i className="bi bi-send-fill"/>
-            </button>
-          </div>
+        <div className="mc-call-controls-dock">
+          <button
+            className={`mc-dock-btn ${micOn ? "" : "off-state"}`}
+            onClick={toggleMic}
+            title={micOn ? "Mute Microphone" : "Unmute Microphone"}
+          >
+            <i className={`bi bi-mic${micOn ? "" : "-mute"}-fill`} />
+            <span>{micOn ? "Mute" : "Unmute"}</span>
+          </button>
+
+          <button
+            className={`mc-dock-btn ${camOn ? "" : "off-state"}`}
+            onClick={toggleCam}
+            title={camOn ? "Turn Off Camera" : "Turn On Camera"}
+          >
+            <i className={`bi bi-camera-video${camOn ? "" : "-off"}-fill`} />
+            <span>{camOn ? "Camera" : "Cam Off"}</span>
+          </button>
+
+          <button
+            className={`mc-dock-btn ${activeDrawer === "chat" ? "active-tab" : ""}`}
+            onClick={() => toggleDrawer("chat")}
+            title="Open Live Chat"
+          >
+            <i className="bi bi-chat-dots-fill" />
+            <span>Chat</span>
+            {unreadCount > 0 && <span className="mc-dock-badge">{unreadCount}</span>}
+          </button>
+
+          <button
+            className={`mc-dock-btn ${activeDrawer === "notes" ? "active-tab" : ""}`}
+            onClick={() => toggleDrawer("notes")}
+            title="Open Private Notes"
+          >
+            <i className="bi bi-journal-text" />
+            <span>Notes</span>
+          </button>
+
+          <button
+            className="mc-dock-btn danger-end"
+            onClick={() => setShowConfirmLeave(true)}
+            disabled={ending}
+            title="Disconnect Call"
+          >
+            {ending ? <span className="spinner-border spinner-border-sm" /> : <i className="bi bi-telephone-x-fill" />}
+            <span>End</span>
+          </button>
         </div>
-      </div>
+      </main>
 
-      {/* Session info strip */}
-      {session && (
-        <div className="mc-session-info-strip">
-          <span><i className="bi bi-calendar3 me-1"/>{session.sessionDate}</span>
-          <span><i className="bi bi-clock me-1"/>{session.sessionTime}</span>
-          <span><i className="bi bi-heart-pulse me-1"/>{session.therapyType?.replace(/_/g," ")||"Session"}</span>
-          <span className={`mc-status mc-status-${session.status?.toLowerCase()||"confirmed"}`}>{session.status}</span>
-        </div>
-      )}
-
-      {/* Leave confirmation modal */}
       {showConfirmLeave && (
         <div className="mc-modal-overlay" onClick={() => setShowConfirmLeave(false)}>
           <div className="mc-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
             <div className="mc-modal-header">
-              <i className="bi bi-telephone-x-fill mc-modal-icon" style={{ color: "#ef4444" }}/>
+              <i className="bi bi-telephone-x-fill mc-modal-icon" style={{ color: "#ef4444" }} />
               <div>
                 <h3>Disconnect Call</h3>
-                <p>Are you sure you want to end and leave this video call? You can rejoin as long as the session slot is active.</p>
+                <p>Are you sure you want to end this live session? You can rejoin as long as your session slot is active.</p>
               </div>
-              <button className="mc-modal-close" onClick={() => setShowConfirmLeave(false)}><i className="bi bi-x-lg"/></button>
+              <button className="mc-modal-close" onClick={() => setShowConfirmLeave(false)}>
+                <i className="bi bi-x-lg" />
+              </button>
             </div>
             <div className="mc-logout-modal-actions mt-3">
               <button className="mc-btn-cancel-outline" onClick={() => setShowConfirmLeave(false)}>Cancel</button>

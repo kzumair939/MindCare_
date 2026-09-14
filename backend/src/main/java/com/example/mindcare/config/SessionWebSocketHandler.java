@@ -30,7 +30,6 @@ public class SessionWebSocketHandler extends BaseWebSocketHandler {
     private final JwtUtils jwtUtils;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // Map of sessionId -> Set of active WebSocket sessions
     private final Map<String, Set<WebSocketSession>> sessionRooms = new ConcurrentHashMap<>();
 
     @Override
@@ -58,21 +57,23 @@ public class SessionWebSocketHandler extends BaseWebSocketHandler {
             return;
         }
 
-        Session sessionEntity = sessionRepository.findById(sessionId).orElse(null);
+        Session sessionEntity = sessionRepository.findByIdWithDetails(sessionId).orElse(null);
         if (sessionEntity == null) {
             log.warn("WebSocket connection attempt for non-existent session {}", sessionId);
             session.close(CloseStatus.POLICY_VIOLATION);
             return;
         }
 
-        // Verify that connecting user is either the patient or the therapist for this session
         boolean isPatient = sessionEntity.getUser() != null &&
-                (username.equals(sessionEntity.getUser().getUsername()) || username.equals(sessionEntity.getUser().getEmail()));
+                (username.equalsIgnoreCase(sessionEntity.getUser().getUsername()) ||
+                 username.equalsIgnoreCase(sessionEntity.getUser().getEmail()));
 
         boolean isTherapist = sessionEntity.getTherapist() != null &&
-                sessionEntity.getTherapist().getUserAccount() != null &&
-                (username.equals(sessionEntity.getTherapist().getUserAccount().getUsername()) ||
-                 username.equals(sessionEntity.getTherapist().getUserAccount().getEmail()));
+                (username.equalsIgnoreCase(sessionEntity.getTherapist().getEmail()) ||
+                 username.equalsIgnoreCase(sessionEntity.getTherapist().getName()) ||
+                 (sessionEntity.getTherapist().getUserAccount() != null &&
+                  (username.equalsIgnoreCase(sessionEntity.getTherapist().getUserAccount().getUsername()) ||
+                   username.equalsIgnoreCase(sessionEntity.getTherapist().getUserAccount().getEmail()))));
 
         if (!isPatient && !isTherapist) {
             log.warn("Forbidden WebSocket access attempt to session {} by user {}", sessionId, username);
@@ -87,7 +88,6 @@ public class SessionWebSocketHandler extends BaseWebSocketHandler {
         room.add(session);
         log.info("WebSocket connection established for session {}: user={}, wsId={}", sessionId, username, session.getId());
 
-        // Broadcast peer-joined to other sessions in the room
         for (WebSocketSession s : room) {
             if (s.isOpen() && !s.getId().equals(session.getId())) {
                 try {
@@ -117,7 +117,6 @@ public class SessionWebSocketHandler extends BaseWebSocketHandler {
         if (room != null) {
             String payload = message.getPayload();
 
-            // 1. Broadcast to other peer in the room
             for (WebSocketSession s : room) {
                 if (s.isOpen() && !s.getId().equals(session.getId())) {
                     try {
@@ -130,7 +129,6 @@ public class SessionWebSocketHandler extends BaseWebSocketHandler {
                 }
             }
 
-            // 2. Parse and persist chat messages in the database using verified sender
             try {
                 Map<String, Object> data = objectMapper.readValue(payload, Map.class);
                 if (data != null && "chat".equals(data.get("type"))) {
@@ -166,7 +164,6 @@ public class SessionWebSocketHandler extends BaseWebSocketHandler {
             Set<WebSocketSession> room = sessionRooms.get(sessionId);
             if (room != null) {
                 room.remove(session);
-                // Broadcast peer-left to other sessions in the room
                 for (WebSocketSession s : room) {
                     if (s.isOpen()) {
                         try {

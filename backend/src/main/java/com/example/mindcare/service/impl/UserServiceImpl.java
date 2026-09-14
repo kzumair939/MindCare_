@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;

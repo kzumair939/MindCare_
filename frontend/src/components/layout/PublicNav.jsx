@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -8,15 +8,32 @@ export default function PublicNav() {
   const { theme, toggle } = useTheme();
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const home = user?.role === "ROLE_ADMIN" ? "/admin"
     : user?.role === "ROLE_THERAPIST" ? "/therapist"
     : user ? "/dashboard" : "/";
 
+  const scrollToSection = (id) => {
+    setOpen(false);
+    if (location.pathname !== "/") {
+      navigate("/#" + id);
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    } else {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <nav className="mc-public-nav">
       <Link to={home} className="mc-brand" onClick={() => setOpen(false)}>
-        <i className="bi bi-heart-pulse-fill mc-brand-mark" />
+        <span className="mc-brand-icon-wrapper">
+          <i className="bi bi-shield-heart-fill mc-brand-mark" />
+        </span>
         <span className="mc-brand-text">
           MindCare
           {user && (
@@ -26,6 +43,18 @@ export default function PublicNav() {
           )}
         </span>
       </Link>
+
+      <div className="mc-nav-center-links">
+        <button type="button" className="mc-nav-link" onClick={() => scrollToSection("how-it-works")}>
+          How It Works
+        </button>
+        <button type="button" className="mc-nav-link" onClick={() => scrollToSection("therapy-approaches")}>
+          Therapy
+        </button>
+        <button type="button" className="mc-nav-link" onClick={() => scrollToSection("anonymous-mode")}>
+          Privacy
+        </button>
+      </div>
 
       <div className={`mc-public-nav-actions${open ? " open" : ""}`}>
         {user ? (
@@ -41,22 +70,27 @@ export default function PublicNav() {
           <>
             <Link
               to="/login"
-              className={`mc-btn-nav-outline${location.pathname === "/login" ? " active" : ""}`}
+              className="mc-btn-nav-login"
               onClick={() => setOpen(false)}
             >
-              <i className="bi bi-box-arrow-in-right" /> <span>Sign in</span>
+              Login
             </Link>
             <Link
-              to="/signup"
-              className={`mc-btn-nav-primary${location.pathname === "/signup" ? " active" : ""}`}
+              to="/survey"
+              className="mc-btn-nav-getstarted"
               onClick={() => setOpen(false)}
             >
-              <i className="bi bi-person-plus" /> <span>Sign up</span>
+              Get Started
             </Link>
           </>
         )}
 
-        <button className="mc-theme-btn" onClick={toggle} title={theme === "dark" ? "Switch to Light mode" : "Switch to Dark mode"}>
+        <button 
+          className="mc-theme-btn" 
+          onClick={toggle} 
+          title={theme === "dark" ? "Switch to Light mode" : "Switch to Dark mode"}
+          aria-label="Toggle Theme"
+        >
           <i className={`bi bi-${theme === "dark" ? "sun-fill" : "moon-stars-fill"}`} />
         </button>
       </div>
@@ -72,4 +106,3 @@ export default function PublicNav() {
     </nav>
   );
 }
-

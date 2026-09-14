@@ -48,6 +48,9 @@ public interface SessionRepository extends JpaRepository<Session,Long> {
 
     long countByUser_UsernameAndStatus(String username, AppointmentStatus status);
 
+    @Query("SELECT s FROM Session s LEFT JOIN FETCH s.user LEFT JOIN FETCH s.therapist t LEFT JOIN FETCH t.userAccount WHERE s.id = :id")
+    java.util.Optional<Session> findByIdWithDetails(@Param("id") Long id);
+
     @Query("select s from Session s where s.status = :status " +
             "and ( (s.sessionDate > :fromDate) or (s.sessionDate = :fromDate and s.sessionTime >= :fromTime) ) " +
             "and ( (s.sessionDate < :toDate) or (s.sessionDate = :toDate and s.sessionTime <= :toTime) )")

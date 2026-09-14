@@ -17,13 +17,11 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class CustomUserDetailService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
     @Override
-    @Cacheable(value = "userDetails", key = "#identifier")
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByUsername(identifier))

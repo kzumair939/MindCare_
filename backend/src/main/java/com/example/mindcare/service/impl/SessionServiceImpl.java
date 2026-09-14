@@ -16,6 +16,7 @@ import com.example.mindcare.service.SessionService;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class SessionServiceImpl implements SessionService {
 
     private final SessionRepository sessionRepository;
@@ -32,6 +34,7 @@ public class SessionServiceImpl implements SessionService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public SessionResponseDTO bookSession(String identifier,
                                           Long therapistId,
                                           LocalDate date,
@@ -48,7 +51,12 @@ public class SessionServiceImpl implements SessionService {
             throw new BadRequestException("Please select date and time");
         }
 
-        System.out.println("DEBUG: Looking for user with identifier: " + identifier);
+        LocalDate today = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
+        if (date.isBefore(today) || (date.isEqual(today) && time.isBefore(nowTime))) {
+            throw new BadRequestException("Cannot book a time slot that has already passed");
+        }
+
         User user = userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByUsername(identifier))
                 .orElseThrow(() -> new NotFoundException("User not found: " + identifier));
@@ -111,6 +119,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public void cancelSession(Long sessionId, String username) {
         Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NotFoundException("Session not found"));
@@ -134,6 +143,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public void completeSession(Long sessionId) {
         Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NotFoundException("Session not found"));
@@ -149,6 +159,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public void cancelSessionByAdmin(Long sessionId) {
         Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NotFoundException("Session not found"));
@@ -192,16 +203,19 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public void confirmSessionByTherapist(Long sessionId, String therapistUsername) {
         updateStatusForTherapist(sessionId, therapistUsername, AppointmentStatus.CONFIRMED);
     }
 
     @Override
+    @Transactional
     public void completeSessionByTherapist(Long sessionId, String therapistUsername) {
         updateStatusForTherapist(sessionId, therapistUsername, AppointmentStatus.COMPLETED);
     }
 
     @Override
+    @Transactional
     public void cancelSessionByTherapist(Long sessionId, String therapistUsername) {
         updateStatusForTherapist(sessionId, therapistUsername, AppointmentStatus.CANCELLED);
     }

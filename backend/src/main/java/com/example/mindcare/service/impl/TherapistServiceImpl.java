@@ -35,7 +35,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class TherapistServiceImpl implements TherapistService {
 
     private final TherapistRepository therapistRepository;
