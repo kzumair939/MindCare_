@@ -32,7 +32,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .or(() -> userRepository.findByUsername(identifier))
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        Session session = sessionRepository.findById(dto.getSessionId())
+        Session session = sessionRepository.findByIdWithDetails(dto.getSessionId())
                 .orElseThrow(() -> new NotFoundException("Session not found"));
 
         // Enforce ownership: Only the patient assigned to this session can process payment
@@ -71,7 +71,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw new BadRequestException("No free sessions remaining");
         }
 
-        Session session = sessionRepository.findById(sessionId)
+        Session session = sessionRepository.findByIdWithDetails(sessionId)
                 .orElseThrow(() -> new NotFoundException("Session not found"));
 
         // Enforce ownership: Only the patient assigned to this session can apply free session credits

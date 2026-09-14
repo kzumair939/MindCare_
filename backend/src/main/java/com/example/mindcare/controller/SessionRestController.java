@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/session")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SessionRestController {
     private final SessionService sessionService;
     private final SessionRepository sessionRepository;
@@ -188,7 +190,7 @@ public class SessionRestController {
 
     @GetMapping("/{id}/messages")
     public ResponseEntity<?> getMessages(@PathVariable Long id, Authentication auth) {
-        Session s = sessionRepository.findById(id).orElse(null);
+        Session s = sessionRepository.findByIdWithDetails(id).orElse(null);
         if (s == null)
             return ResponseEntity.notFound().build();
 
@@ -244,7 +246,7 @@ public class SessionRestController {
 
     @GetMapping("/{id}/online-info")
     public ResponseEntity<?> onlineInfo(@PathVariable Long id, Authentication auth) {
-        Session s = sessionRepository.findById(id).orElse(null);
+        Session s = sessionRepository.findByIdWithDetails(id).orElse(null);
         if (s == null)
             return ResponseEntity.notFound().build();
 
@@ -318,10 +320,10 @@ public class SessionRestController {
         return ResponseEntity.ok(Map.of("message", "Cancelled"));
     }
 
-    // GET single session (for OnlineSession page)
+    // GET single session (for OnlineSession & Payment pages)
     @GetMapping("/{id}")
     public ResponseEntity<?> getSession(@PathVariable Long id, Authentication auth) {
-        Session s = sessionRepository.findById(id).orElse(null);
+        Session s = sessionRepository.findByIdWithDetails(id).orElse(null);
         if (s == null)
             return ResponseEntity.notFound().build();
 
