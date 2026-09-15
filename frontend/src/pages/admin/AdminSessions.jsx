@@ -5,9 +5,13 @@ import api from "../../api/axios";
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"; }
 function fmtTime(t) { return t || "—"; }
-function fmt(s) { return s ? s.charAt(0) + s.slice(1).toLowerCase().replace(/_/g, " ") : "—"; }
+function fmt(s) {
+  if (!s) return "—";
+  if (s.toUpperCase() === "PENDING_PAYMENT") return "Payment Pending";
+  return s.charAt(0) + s.slice(1).toLowerCase().replace(/_/g, " ");
+}
 function statusClass(s) {
-  const map = { BOOKED: "booked", CONFIRMED: "confirmed", COMPLETED: "completed", CANCELLED: "cancelled", PENDING: "pending" };
+  const map = { PENDING_PAYMENT: "pending", BOOKED: "confirmed", CONFIRMED: "confirmed", COMPLETED: "completed", CANCELLED: "cancelled", PENDING: "pending", MISSED: "missed" };
   return `mc-status mc-status-${map[s?.toUpperCase()] || "pending"}`;
 }
 
@@ -32,7 +36,7 @@ export default function AdminSessions() {
     setCurrentPage(1);
   }, [filter, search, sortOrder]);
 
-  const tabs = ["ALL", "BOOKED", "CONFIRMED", "COMPLETED", "CANCELLED"];
+  const tabs = ["ALL", "CONFIRMED", "PENDING_PAYMENT", "COMPLETED", "MISSED", "CANCELLED"];
   
   // 1. Filter
   const filtered = sessions.filter(s => {

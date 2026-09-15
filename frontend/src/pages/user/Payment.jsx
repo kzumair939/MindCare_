@@ -340,7 +340,7 @@ export default function Payment() {
                       </strong>
                     </div>
 
-                    <div className="mc-receipt-detail-item" style={{ gridColumn: "span 2" }}>
+                    <div className="mc-receipt-detail-item mc-receipt-detail-full">
                       <span className="mc-receipt-detail-label">Consultation Format</span>
                       <strong className="mc-receipt-detail-value">
                         <i className="bi bi-camera-video text-primary" />
@@ -380,13 +380,13 @@ export default function Payment() {
 
             {/* RIGHT COLUMN: Interactive Credit Card / Standard Checkout */}
             <div className="mc-pay-card">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h3 className="m-0 d-flex align-items-center gap-2" style={{ fontSize: "1.1rem", fontWeight: 700 }}>
+              <div className="mc-pay-checkout-header">
+                <h3 className="mc-pay-checkout-title">
                   <i className="bi bi-credit-card-2-front-fill text-primary" /> Standard Card Checkout
                 </h3>
                 <button
                   type="button"
-                  className="mc-pay-demo-btn m-0"
+                  className="mc-pay-demo-btn"
                   onClick={fillDemoCard}
                   title="Fill with test card details"
                 >
@@ -448,6 +448,7 @@ export default function Payment() {
                   <div className="mc-pay-input-wrap">
                     <input
                       type="text"
+                      inputMode="numeric"
                       className="mc-pay-input"
                       placeholder="4242 4242 4242 4242"
                       value={cardNumber}
@@ -467,6 +468,7 @@ export default function Payment() {
                     <div className="mc-pay-input-wrap">
                       <input
                         type="text"
+                        inputMode="numeric"
                         className="mc-pay-input"
                         placeholder="MM / YY"
                         value={expiry}
@@ -485,6 +487,7 @@ export default function Payment() {
                     <div className="mc-pay-input-wrap">
                       <input
                         type="password"
+                        inputMode="numeric"
                         className="mc-pay-input"
                         placeholder="•••"
                         value={cvv}

@@ -33,9 +33,23 @@ export default function AdminTherapists() {
                   {therapists.length===0 && <tr><td colSpan={7} className="text-center text-muted p-4">No therapists yet.</td></tr>}
                   {therapists.map(t=>(
                     <tr key={t.id}>
-                      <td>{t.profilePicturePath
-                        ? <img src={`/uploads/profile-pictures/${t.profilePicturePath.split(/[/\\]/).pop()}`} alt={t.name} style={{width:40,height:40,borderRadius:"50%",objectFit:"cover"}} onError={e=>e.target.style.display="none"}/>
-                        : <div style={{width:40,height:40,borderRadius:"50%",background:"var(--mc-surface-2)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--mc-muted)"}}><i className="bi bi-person-circle"/></div>}</td>
+                      <td>
+                        {t.profilePicturePath ? (
+                          <img
+                            src={t.profilePicturePath.startsWith("/") || t.profilePicturePath.startsWith("http") ? t.profilePicturePath : `/uploads/profile-pictures/${t.profilePicturePath.split(/[/\\]/).pop()}`}
+                            alt={t.name}
+                            style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", border: "1.5px solid var(--mc-border)" }}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name || "Therapist")}&background=3b82f6&color=fff&bold=true`;
+                            }}
+                          />
+                        ) : (
+                          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(20,184,166,0.2))", color: "var(--mc-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.9rem", border: "1.5px solid var(--mc-border)" }}>
+                            {(t.name || "T").charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </td>
                       <td className="fw-medium">{t.name}</td>
                       <td>{t.email}</td>
                       <td>{t.specialization||"—"}</td>

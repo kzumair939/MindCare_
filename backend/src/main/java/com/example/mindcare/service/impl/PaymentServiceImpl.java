@@ -32,7 +32,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .or(() -> userRepository.findByUsername(identifier))
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        Session session = sessionRepository.findByIdWithDetails(dto.getSessionId())
+        Session session = sessionRepository.findById(dto.getSessionId())
                 .orElseThrow(() -> new NotFoundException("Session not found"));
 
         // Enforce ownership: Only the patient assigned to this session can process payment
@@ -41,8 +41,11 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // Check if already paid
-        if (paymentRepository.findBySessionId(dto.getSessionId()).isPresent()) {
-            throw new BadRequestException("Session already paid");
+        java.util.Optional<Payment> existing = paymentRepository.findBySessionId(dto.getSessionId());
+        if (existing.isPresent()) {
+            session.setStatus(com.example.mindcare.Enum.AppointmentStatus.CONFIRMED);
+            sessionRepository.save(session);
+            return existing.get();
         }
 
         // Simulate Stripe payment - generate a fake payment intent ID
@@ -51,14 +54,17 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = Payment.builder()
                 .session(session)
                 .user(user)
-                .amount(Math.toIntExact(dto.getAmount() != null ? dto.getAmount() : session.getFeeAmount()))
+                .amount(Math.toIntExact(dto.getAmount() != null ? dto.getAmount() : (session.getFeeAmount() != null ? session.getFeeAmount() : 50)))
                 .currency("USD")
                 .stripePaymentIntentId(fakePaymentIntentId)
                 .status("succeeded")
                 .freeSession(false)
                 .build();
 
-        return paymentRepository.save(payment);
+        Payment saved = paymentRepository.save(payment);
+        session.setStatus(com.example.mindcare.Enum.AppointmentStatus.CONFIRMED);
+        sessionRepository.save(session);
+        return saved;
     }
 
     @Override
@@ -67,11 +73,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .or(() -> userRepository.findByUsername(identifier))
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        if (user.getFreeSessionsUsed() >= 2) {
-            throw new BadRequestException("No free sessions remaining");
-        }
-
-        Session session = sessionRepository.findByIdWithDetails(sessionId)
+        Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NotFoundException("Session not found"));
 
         // Enforce ownership: Only the patient assigned to this session can apply free session credits
@@ -79,8 +81,15 @@ public class PaymentServiceImpl implements PaymentService {
             throw new BadRequestException("You are not authorized to apply free session credits to this session");
         }
 
-        if (paymentRepository.findBySessionId(sessionId).isPresent()) {
-            throw new BadRequestException("Session already has payment registered");
+        java.util.Optional<Payment> existing = paymentRepository.findBySessionId(sessionId);
+        if (existing.isPresent()) {
+            session.setStatus(com.example.mindcare.Enum.AppointmentStatus.CONFIRMED);
+            sessionRepository.save(session);
+            return existing.get();
+        }
+
+        if (user.getFreeSessionsUsed() >= 2) {
+            throw new BadRequestException("No free sessions remaining");
         }
 
         user.setFreeSessionsUsed(user.getFreeSessionsUsed() + 1);
@@ -96,7 +105,10 @@ public class PaymentServiceImpl implements PaymentService {
                 .freeSession(true)
                 .build();
 
-        return paymentRepository.save(payment);
+        Payment saved = paymentRepository.save(payment);
+        session.setStatus(com.example.mindcare.Enum.AppointmentStatus.CONFIRMED);
+        sessionRepository.save(session);
+        return saved;
     }
 
     @Override

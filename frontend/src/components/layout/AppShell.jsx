@@ -11,6 +11,9 @@ export default function AppShell({ children, hideFooter = true }) {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
   }, [pathname]);
 
   return (

@@ -42,12 +42,9 @@ public class SessionAutoCompletionScheduler {
             LocalDateTime end = start.plusMinutes(durationMinutes);
 
             if (!end.isAfter(now)) {
-                s.setStatus(AppointmentStatus.COMPLETED);
-                if (s.getCompletedAt() == null) {
-                    s.setCompletedAt(now);
-                }
+                s.setStatus(AppointmentStatus.MISSED);
                 sessionRepository.save(s);
-                log.info("Auto-completed session id={} (ended {} minutes ago)", s.getId(),
+                log.info("Auto-marked session id={} as MISSED (ended {} minutes ago)", s.getId(),
                         Duration.between(end, now).toMinutes());
             }
         }

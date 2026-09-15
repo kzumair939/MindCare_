@@ -16,10 +16,26 @@ export default function TherapistForm() {
   });
   const [selectedDays, setSelectedDays] = useState([]);
   const [picFile, setPicFile] = useState(null);
+  const [existingPic, setExistingPic] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showPass, setShowPass] = useState(false);
   const picRef = useRef();
+
+  const [selectedLanguages, setSelectedLanguages] = useState([]);
+  const [langQuery, setLangQuery] = useState("");
+
+  const ALL_LANGUAGES = [
+    "English", "Urdu", "Spanish", "Arabic", "Hindi", "French", "German", "Mandarin",
+    "Punjabi", "Bengali", "Russian", "Portuguese", "Italian", "Turkish", "Persian (Farsi)",
+    "Japanese", "Korean", "Dutch", "Polish", "Swedish", "Vietnamese", "Tagalog", "Pashto",
+    "Sindhi", "Gujarati", "Marathi", "Tamil", "Telugu", "Malayalam", "Greek", "Hebrew",
+    "Indonesian", "Thai", "Ukrainian", "Romanian", "Czech", "Hungarian", "Danish", "Norwegian"
+  ];
+
+  const CATEGORY_SUGGESTIONS = [
+    "CBT", "ACT", "DBT", "TRAUMA_FOCUSED", "COUPLES_FAMILY", "SLEEP_CBT_I", "ADHD_COACHING", "GENERAL_COUNSELLING", "Depression & Anxiety"
+  ];
 
   useEffect(() => {
     if (isEdit) {
@@ -35,6 +51,11 @@ export default function TherapistForm() {
             specialties: t.specialties||"",
             username: t.username||"", password:""
           });
+          if (t.languages) {
+            const parsed = t.languages.split(",").map(l => l.trim()).filter(Boolean);
+            setSelectedLanguages(parsed);
+          }
+          if (t.profilePicturePath) setExistingPic(t.profilePicturePath);
           if (t.availableDays) setSelectedDays(t.availableDays.split(",").map(d=>d.trim()));
         }
       });
@@ -45,11 +66,51 @@ export default function TherapistForm() {
     setSelectedDays(prev => prev.includes(day) ? prev.filter(d=>d!==day) : [...prev, day]);
   }
 
+  function addLanguage(lang) {
+    const trimmed = lang.trim();
+    if (!trimmed) return;
+    if (!selectedLanguages.some(l => l.toLowerCase() === trimmed.toLowerCase())) {
+      const updated = [...selectedLanguages, trimmed];
+      setSelectedLanguages(updated);
+      setForm(f => ({ ...f, languages: updated.join(", ") }));
+    }
+    setLangQuery("");
+  }
+
+  function removeLanguage(lang) {
+    const updated = selectedLanguages.filter(l => l !== lang);
+    setSelectedLanguages(updated);
+    setForm(f => ({ ...f, languages: updated.join(", ") }));
+  }
+
+  function handleLangKeyDown(e) {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      if (filteredLanguages.length > 0) {
+        addLanguage(filteredLanguages[0]);
+      } else if (langQuery.trim()) {
+        addLanguage(langQuery.trim());
+      }
+    }
+  }
+
+  // Filter languages that start with the query characters (e.g. typing "ur" matches "Urdu")
+  const filteredLanguages = langQuery.trim()
+    ? ALL_LANGUAGES.filter(lang =>
+        lang.toLowerCase().startsWith(langQuery.toLowerCase().trim()) &&
+        !selectedLanguages.includes(lang)
+      )
+    : ALL_LANGUAGES.filter(lang => !selectedLanguages.includes(lang)).slice(0, 8);
+
   async function handleSubmit(e) {
     e.preventDefault(); setSaving(true); setError("");
     if (!isEdit && !form.username) { setError("Username is required"); setSaving(false); return; }
     if (!isEdit && !form.password) { setError("Password is required"); setSaving(false); return; }
-    const payload = { ...form, availableDays: selectedDays.join(",") };
+    const payload = {
+      ...form,
+      languages: selectedLanguages.join(", "),
+      availableDays: selectedDays.join(",")
+    };
     try {
       let saved;
       if (isEdit) {
@@ -99,26 +160,154 @@ export default function TherapistForm() {
             {/* Section: Basic Info */}
             <div className="mc-form-section-title"><i className="bi bi-person-badge me-2"/>Therapist Information</div>
             <div className="mc-form-grid">
-              {[
-                ["name","Full Name","person",true,"e.g. Dr. Sarah Ahmed"],
-                ["email","Email Address","envelope",true,"therapist@email.com"],
-                ["specialization","Specialization","heart-pulse",true,"e.g. Anxiety & Depression"],
-                ["languages","Languages","translate",false,"e.g. English, Urdu"],
-                ["sessionPrice","Session Price ($)","cash",false,"e.g. 50"],
-              ].map(([key,label,icon,req,ph]) => (
-                <label key={key} className="mc-field">
-                  <span>{label}{req && <span className="mc-required">*</span>}</span>
-                  <div className="mc-input-wrap">
-                    <i className={`bi bi-${icon}`}/>
-                    <input
-                      required={req}
-                      placeholder={ph}
-                      value={form[key]}
-                      onChange={e => setForm({...form, [key]: e.target.value})}
-                    />
+              <label className="mc-field">
+                <span>Full Name<span className="mc-required">*</span></span>
+                <div className="mc-input-wrap">
+                  <i className="bi bi-person"/>
+                  <input
+                    required
+                    placeholder="e.g. Dr. Sarah Ahmed"
+                    value={form.name}
+                    onChange={e => setForm({...form, name: e.target.value})}
+                  />
+                </div>
+              </label>
+
+              <label className="mc-field">
+                <span>Email Address<span className="mc-required">*</span></span>
+                <div className="mc-input-wrap">
+                  <i className="bi bi-envelope"/>
+                  <input
+                    type="email"
+                    required
+                    placeholder="therapist@email.com"
+                    value={form.email}
+                    onChange={e => setForm({...form, email: e.target.value})}
+                  />
+                </div>
+              </label>
+
+              <label className="mc-field">
+                <span>Category / Therapy Type<span className="mc-required">*</span></span>
+                <div className="mc-input-wrap">
+                  <i className="bi bi-heart-pulse"/>
+                  <input
+                    required
+                    placeholder="e.g. CBT, Anxiety & Depression, DBT"
+                    value={form.specialization}
+                    onChange={e => setForm({...form, specialization: e.target.value})}
+                  />
+                </div>
+                <div className="mc-preset-row mt-1" style={{ flexWrap: "wrap", gap: "6px" }}>
+                  {CATEGORY_SUGGESTIONS.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      className="mc-preset-btn"
+                      style={{ fontSize: "0.72rem", padding: "3px 8px" }}
+                      onClick={() => setForm(f => ({ ...f, specialization: cat }))}
+                    >
+                      {cat.replace(/_/g, " ")}
+                    </button>
+                  ))}
+                </div>
+              </label>
+
+              {/* Categorized Languages with Prefix Filter (e.g. "ur" -> "Urdu") */}
+              <div className="mc-field span-12">
+                <span>Languages Spoken<span className="mc-required">*</span></span>
+                
+                {/* Active Selected Language Badges */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px", minHeight: selectedLanguages.length > 0 ? "auto" : "0" }}>
+                  {selectedLanguages.map(lang => (
+                    <span
+                      key={lang}
+                      className="badge bg-primary d-inline-flex align-items-center gap-1 px-2 py-1"
+                      style={{ fontSize: "0.82rem", borderRadius: "6px" }}
+                    >
+                      <i className="bi bi-translate me-1" />
+                      {lang}
+                      <button
+                        type="button"
+                        onClick={() => removeLanguage(lang)}
+                        style={{ background: "none", border: "none", color: "inherit", padding: 0, marginLeft: "4px", cursor: "pointer", display: "flex", alignItems: "center" }}
+                        title={`Remove ${lang}`}
+                      >
+                        <i className="bi bi-x-circle-fill" style={{ fontSize: "0.85rem" }} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+
+                {/* Filter / Search Input */}
+                <div className="mc-input-wrap">
+                  <i className="bi bi-translate" />
+                  <input
+                    type="text"
+                    placeholder="Filter language by starting letters (e.g. type 'ur' for Urdu, 'en' for English)..."
+                    value={langQuery}
+                    onChange={e => setLangQuery(e.target.value)}
+                    onKeyDown={handleLangKeyDown}
+                  />
+                  {langQuery && (
+                    <button
+                      type="button"
+                      onClick={() => addLanguage(langQuery)}
+                      className="btn btn-sm btn-primary"
+                      style={{ position: "absolute", right: "6px", top: "50%", transform: "translateY(-50%)", padding: "3px 10px", fontSize: "0.75rem" }}
+                    >
+                      Add "{langQuery}"
+                    </button>
+                  )}
+                </div>
+
+                {/* Matching Filtered Suggestions starting with typed letters */}
+                <div className="mt-2">
+                  <div className="text-muted small mb-1" style={{ fontSize: "0.74rem" }}>
+                    {langQuery.trim() ? (
+                      filteredLanguages.length > 0 ? (
+                        <span><i className="bi bi-filter me-1" />Languages starting with "<strong>{langQuery}</strong>":</span>
+                      ) : (
+                        <span>No standard language starts with "<strong>{langQuery}</strong>". Press Enter or click Add to use custom.</span>
+                      )
+                    ) : (
+                      <span><i className="bi bi-lightning-charge me-1" />Popular Languages:</span>
+                    )}
                   </div>
-                </label>
-              ))}
+                  <div className="mc-preset-row" style={{ flexWrap: "wrap", gap: "6px" }}>
+                    {filteredLanguages.map(lang => (
+                      <button
+                        key={lang}
+                        type="button"
+                        className="mc-preset-btn"
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "4px 10px",
+                          fontWeight: langQuery && lang.toLowerCase().startsWith(langQuery.toLowerCase()) ? 700 : 500,
+                          borderColor: langQuery && lang.toLowerCase().startsWith(langQuery.toLowerCase()) ? "var(--mc-primary)" : "var(--mc-border)"
+                        }}
+                        onClick={() => addLanguage(lang)}
+                      >
+                        <i className="bi bi-plus-sm me-1" />{lang}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <label className="mc-field">
+                <span>Session Price ($)</span>
+                <div className="mc-input-wrap">
+                  <i className="bi bi-cash"/>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 50"
+                    value={form.sessionPrice}
+                    onChange={e => setForm({...form, sessionPrice: e.target.value})}
+                  />
+                </div>
+              </label>
             </div>
 
             {/* Section: Login Credentials */}
@@ -223,14 +412,36 @@ export default function TherapistForm() {
                   className="mc-textarea"
                 />
               </label>
-              <label className="mc-field span-12">
-                <span>Profile Picture (JPG/PNG)</span>
-                <div className="mc-input-wrap">
-                  <i className="bi bi-camera"/>
-                  <input type="file" accept="image/*" ref={picRef} onChange={e => setPicFile(e.target.files[0])}/>
+              <div className="mc-field span-12">
+                <span>Profile Picture (JPG / PNG)</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "6px" }}>
+                  <div style={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", background: "var(--mc-surface-2)", border: "2px solid var(--mc-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {picFile ? (
+                      <img src={URL.createObjectURL(picFile)} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : existingPic ? (
+                      <img
+                        src={existingPic.startsWith("/") || existingPic.startsWith("http") ? existingPic : `/uploads/profile-pictures/${existingPic.split(/[/\\]/).pop()}`}
+                        alt="Current"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(form.name || "Therapist")}&background=3b82f6&color=fff&bold=true`;
+                        }}
+                      />
+                    ) : (
+                      <i className="bi bi-person-circle" style={{ fontSize: "2rem", color: "var(--mc-muted)" }} />
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div className="mc-input-wrap">
+                      <i className="bi bi-camera"/>
+                      <input type="file" accept="image/*" ref={picRef} onChange={e => setPicFile(e.target.files[0])}/>
+                    </div>
+                    {picFile && <div className="mc-file-preview mt-1"><i className="bi bi-check-circle-fill text-success me-1"/>Selected: {picFile.name}</div>}
+                    {!picFile && existingPic && <div className="text-muted" style={{ fontSize: "0.78rem", marginTop: "4px" }}>Current photo active. Select a new file to change.</div>}
+                  </div>
                 </div>
-                {picFile && <div className="mc-file-preview"><i className="bi bi-check-circle-fill text-success me-1"/>{picFile.name}</div>}
-              </label>
+              </div>
             </div>
 
             <div className="mc-form-actions">

@@ -2766,14 +2766,47 @@ img { max-width:100%; }
   border-radius:var(--mc-radius-lg); padding:4px;
   box-shadow:var(--mc-shadow); overflow:hidden;
 }
-.mc-table { color:var(--mc-text); font-size:.875rem; margin:0; }
-.mc-table thead th {
-  background:var(--mc-surface-2); color:var(--mc-muted);
-  font-size:.75rem; font-weight:700; text-transform:uppercase;
-  letter-spacing:.06em; border:none; padding:12px 16px;
+.mc-table,
+.table.mc-table,
+.table {
+  --bs-table-bg: transparent !important;
+  --bs-table-color: var(--mc-text) !important;
+  --bs-table-border-color: var(--mc-border) !important;
+  --bs-table-accent-bg: transparent !important;
+  --bs-table-striped-bg: rgba(255, 255, 255, 0.02) !important;
+  --bs-table-hover-bg: rgba(var(--mc-primary-rgb), 0.05) !important;
+  color: var(--mc-text) !important;
+  background-color: transparent !important;
+  font-size: .875rem;
+  margin: 0;
 }
-.mc-table tbody td { padding:13px 16px; border-color:var(--mc-border); vertical-align:middle; }
-.mc-table tbody tr:hover { background:rgba(var(--mc-primary-rgb),.03); }
+.table > :not(caption) > * > *,
+.mc-table > :not(caption) > * > *,
+.mc-table tbody tr,
+.mc-table tbody td {
+  background-color: transparent !important;
+  color: var(--mc-text) !important;
+  border-color: var(--mc-border) !important;
+  box-shadow: none !important;
+}
+.mc-table thead th {
+  background: var(--mc-surface-2) !important;
+  color: var(--mc-muted) !important;
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  border: none !important;
+  padding: 12px 16px;
+}
+.mc-table tbody td {
+  padding: 13px 16px;
+  border-color: var(--mc-border);
+  vertical-align: middle;
+}
+.mc-table tbody tr:hover {
+  background: rgba(var(--mc-primary-rgb), .05) !important;
+}
 
 /* ==========================================================
    STATUS BADGES
@@ -2787,6 +2820,7 @@ img { max-width:100%; }
 .mc-status-confirmed { background:rgba(34,197,94,.1);  color:var(--mc-green); }
 .mc-status-completed { background:rgba(20,184,166,.1); color:var(--mc-teal); }
 .mc-status-cancelled { background:rgba(239,68,68,.1);  color:var(--mc-red); }
+.mc-status-missed    { background:rgba(239,68,68,.15); color:#ef4444; border: 1px solid rgba(239,68,68,.3); }
 
 /* ==========================================================
    DASHBOARD CARDS
@@ -4427,8 +4461,13 @@ img { max-width:100%; }
   .mc-reports-grid { grid-template-columns:1fr; }
   .mc-feedback-grid { grid-template-columns:1fr; }
   .mc-analytics-summary-row { gap:12px; }
-  .mc-chat-members-panel { display:none; } /* collapse on mobile */
   .mc-book-layout { grid-template-columns: 1fr; }
+  .mc-book-form { padding: 20px 16px !important; }
+  .mc-book-step { gap: 12px; padding: 18px 0; }
+  .mc-book-step-num { width: 28px; height: 28px; font-size: 0.78rem; }
+  .mc-therapist-card { flex-direction: column; align-items: center; text-align: center; }
+  .mc-therapist-meta { justify-content: center; }
+  .mc-slot-grid { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)) !important; gap: 8px !important; }
 }
 
 @media (max-width:768px) {

@@ -21,6 +21,13 @@ public interface SessionRepository extends JpaRepository<Session,Long> {
             AppointmentStatus status
     );
 
+    boolean existsByTherapistAndSessionDateAndSessionTimeAndStatusIn(
+            Therapist therapist,
+            LocalDate date,
+            LocalTime time,
+            List<AppointmentStatus> statuses
+    );
+
     // Get all booked/confirmed sessions for a therapist on a given date
     List<Session> findAllByTherapist_IdAndSessionDateAndStatusIn(
             Long therapistId,

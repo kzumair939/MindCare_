@@ -50,8 +50,8 @@ public class Session {
     private Integer durationMinutes;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", columnDefinition = "VARCHAR(50) NOT NULL DEFAULT 'BOOKED'")
-    private AppointmentStatus status = AppointmentStatus.BOOKED;
+    @Column(name = "status", columnDefinition = "VARCHAR(50) NOT NULL DEFAULT 'PENDING_PAYMENT'")
+    private AppointmentStatus status = AppointmentStatus.PENDING_PAYMENT;
 
     private LocalDateTime completedAt;
     private LocalDateTime cancelledAt;

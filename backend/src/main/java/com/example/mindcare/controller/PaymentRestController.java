@@ -16,23 +16,13 @@ public class PaymentRestController {
 
     @PostMapping("/pay")
     public ResponseEntity<?> pay(@RequestBody PaymentDto dto, Authentication auth) {
-        try {
-            paymentService.processPayment(auth.getName(), dto);
-            return ResponseEntity.ok(Map.of("message","Payment successful"));
-        } catch (Exception e) {
-            Throwable cause = e.getCause() != null ? e.getCause() : e;
-            return ResponseEntity.badRequest().body(Map.of("error", cause.getMessage() != null ? cause.getMessage() : "Payment failed"));
-        }
+        paymentService.processPayment(auth.getName(), dto);
+        return ResponseEntity.ok(Map.of("message", "Payment successful"));
     }
 
     @PostMapping("/free/{sessionId}")
     public ResponseEntity<?> free(@PathVariable Long sessionId, Authentication auth) {
-        try {
-            paymentService.processFreeSession(auth.getName(), sessionId);
-            return ResponseEntity.ok(Map.of("message","Free session applied"));
-        } catch (Exception e) {
-            Throwable cause = e.getCause() != null ? e.getCause() : e;
-            return ResponseEntity.badRequest().body(Map.of("error", cause.getMessage() != null ? cause.getMessage() : "Failed to apply free session"));
-        }
+        paymentService.processFreeSession(auth.getName(), sessionId);
+        return ResponseEntity.ok(Map.of("message", "Free session applied"));
     }
 }

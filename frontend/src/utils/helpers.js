@@ -1,5 +1,6 @@
 export function fmt(val, fallback="N/A") {
   if (val == null || val === "") return fallback;
+  if (String(val).toUpperCase() === "PENDING_PAYMENT") return "Payment Pending";
   return String(val).replaceAll("_", " ");
 }
 
@@ -18,8 +19,11 @@ export function fmtTime(val) {
 export function statusClass(s) {
   const v = String(s||"").toLowerCase();
   if (v === "booked") return "mc-status mc-status-booked";
+  if (v === "confirmed") return "mc-status mc-status-confirmed";
   if (v === "completed") return "mc-status mc-status-completed";
   if (v === "cancelled") return "mc-status mc-status-cancelled";
+  if (v === "missed") return "mc-status mc-status-missed";
+  if (v === "pending" || v === "pending_payment") return "mc-status mc-status-pending";
   return "mc-status";
 }
 

@@ -42,7 +42,10 @@ public class AdminRestController {
         return ResponseEntity.ok(therapistService.getAllTherapists().stream().map(t -> {
             Map<String,Object> m = new LinkedHashMap<>();
             m.put("id",t.getId()); m.put("name",t.getName()); m.put("email",t.getEmail());
-            m.put("specialization",t.getSpecialization()); m.put("sessionPrice",t.getSessionPrice());
+            m.put("specialization",t.getSpecialization()); m.put("specialties",t.getSpecialties());
+            m.put("languages",t.getLanguages()); m.put("sessionPrice",t.getSessionPrice());
+            m.put("availableDays",t.getAvailableDays());
+            m.put("availableTimeStart",t.getAvailableTimeStart()); m.put("availableTimeEnd",t.getAvailableTimeEnd());
             m.put("active",t.isActive()); m.put("verified",t.isVerified());
             m.put("profilePicturePath",t.getProfilePicturePath());
             return m;

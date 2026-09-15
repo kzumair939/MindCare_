@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/session")
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class SessionRestController {
     private final SessionService sessionService;
     private final SessionRepository sessionRepository;

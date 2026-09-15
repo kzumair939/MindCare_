@@ -83,12 +83,30 @@ export default function BookSession() {
     }
   }, []);
 
+function matchTherapyType(t) {
+  if (!t) return "";
+  const cat = ((t.languages || "") + " " + (t.specialization || "") + " " + (t.specialties || "")).toUpperCase();
+  if (cat.includes("CBT") && !cat.includes("CBT-I") && !cat.includes("SLEEP")) return "CBT";
+  if (cat.includes("SLEEP") || cat.includes("CBT_I") || cat.includes("CBT-I")) return "SLEEP_CBT_I";
+  if (cat.includes("ACT") || cat.includes("ACCEPTANCE")) return "ACT";
+  if (cat.includes("DBT") || cat.includes("DIALECTICAL")) return "DBT";
+  if (cat.includes("TRAUMA") || cat.includes("PTSD")) return "TRAUMA_FOCUSED";
+  if (cat.includes("COUPLE") || cat.includes("FAMILY") || cat.includes("RELATION")) return "COUPLES_FAMILY";
+  if (cat.includes("ADHD") || cat.includes("COACH")) return "ADHD_COACHING";
+  if (cat.includes("DEPRESSION") || cat.includes("ANXIETY") || cat.includes("COUNSEL") || cat.includes("GENERAL")) return "CBT";
+  for (const [code] of THERAPY_TYPES) {
+    if (cat.includes(code)) return code;
+  }
+  return "GENERAL_COUNSELLING";
+}
+
   function pick(id) {
     const t = therapists.find(t => String(t.id) === String(id)) || null;
-    setForm(f => ({ ...f, therapistId: id, date: "", time: "" }));
+    const autoType = t ? matchTherapyType(t) : "";
+    setForm(f => ({ ...f, therapistId: id, therapyType: autoType || f.therapyType, date: "", time: "" }));
     setSelected(t);
     setSlots([]);
-    setFieldErrors(fe => ({ ...fe, therapistId: "" }));
+    setFieldErrors(fe => ({ ...fe, therapistId: "", therapyType: "" }));
   }
 
   function handleDateChange(date) {
@@ -223,10 +241,20 @@ export default function BookSession() {
                   {selected && (
                     <div className="mc-therapist-card mc-animate-in">
                       <div className="mc-therapist-card-avatar">
-                        {selected.profilePicturePath
-                          ? <img src={`/uploads/profile-pictures/${selected.profilePicturePath.split(/[/\\]/).pop()}`} alt={selected.name} onError={e => e.target.style.display="none"}/>
-                          : <i className="bi bi-person-circle"/>
-                        }
+                        {selected.profilePicturePath ? (
+                          <img
+                            src={selected.profilePicturePath.startsWith("/") || selected.profilePicturePath.startsWith("http") ? selected.profilePicturePath : `/uploads/profile-pictures/${selected.profilePicturePath.split(/[/\\]/).pop()}`}
+                            alt={selected.name}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selected.name || "Therapist")}&background=3b82f6&color=fff&bold=true`;
+                            }}
+                          />
+                        ) : (
+                          <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(20,184,166,0.2))", color: "var(--mc-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "1.3rem" }}>
+                            {(selected.name || "T").charAt(0).toUpperCase()}
+                          </div>
+                        )}
                       </div>
                       <div className="mc-therapist-card-info">
                         <h5>{selected.name}</h5>

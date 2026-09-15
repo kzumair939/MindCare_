@@ -3,9 +3,11 @@
    ============================================================ */
 
 .mc-pay-page {
-  padding: 24px 16px 80px;
+  padding: 24px 16px 140px;
   max-width: 1140px;
   margin: 0 auto;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .mc-pay-grid {
@@ -14,9 +16,11 @@
   gap: 28px;
   align-items: start;
   margin-top: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .mc-pay-grid {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -32,6 +36,8 @@
   box-shadow: var(--mc-shadow);
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
   transition: box-shadow var(--mc-anim), border-color var(--mc-anim);
 }
 
@@ -45,6 +51,26 @@
   box-shadow: var(--mc-shadow-lg);
 }
 
+/* Checkout Header */
+.mc-pay-checkout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.mc-pay-checkout-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--mc-text);
+}
+
 /* ============================================================
    PATIENT BOOKING RECEIPT CARD
    ============================================================ */
@@ -56,6 +82,8 @@
   box-shadow: var(--mc-shadow-lg);
   position: relative;
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 [data-theme="dark"] .mc-receipt-card {
@@ -66,12 +94,15 @@
 .mc-receipt-header {
   background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
   color: #ffffff;
-  padding: 20px 24px;
+  padding: 18px 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   border-bottom: 2px dashed rgba(255, 255, 255, 0.15);
   position: relative;
+  box-sizing: border-box;
 }
 
 .mc-receipt-brand {
@@ -81,8 +112,9 @@
 }
 
 .mc-receipt-brand i {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: #38bdf8;
+  flex-shrink: 0;
 }
 
 .mc-receipt-title {
@@ -96,26 +128,30 @@
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.7);
   font-family: monospace;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
+  display: block;
+  margin-top: 2px;
 }
 
 .mc-receipt-badge {
   background: rgba(34, 197, 94, 0.2);
   color: #4ade80;
   border: 1px solid rgba(34, 197, 94, 0.4);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 99px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .mc-receipt-body {
-  padding: 24px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
+  box-sizing: border-box;
 }
 
 /* Patient Banner */
@@ -123,10 +159,13 @@
   background: var(--mc-surface-2);
   border: 1px solid var(--mc-border);
   border-radius: var(--mc-radius);
-  padding: 14px 16px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  box-sizing: border-box;
 }
 
 [data-theme="dark"] .mc-receipt-patient-box {
@@ -137,19 +176,26 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex: 1;
 }
 
 .mc-receipt-patient-avatar {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
   background: linear-gradient(135deg, var(--mc-primary) 0%, var(--mc-teal) 100%);
   color: #ffffff;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 800;
   display: grid;
   place-items: center;
   flex-shrink: 0;
+}
+
+.mc-receipt-patient-text {
+  min-width: 0;
+  flex: 1;
 }
 
 .mc-receipt-patient-text h4 {
@@ -157,12 +203,14 @@
   font-size: 0.95rem;
   font-weight: 800;
   color: var(--mc-text);
+  word-break: break-word;
 }
 
 .mc-receipt-patient-text p {
   margin: 0;
   font-size: 0.78rem;
   color: var(--mc-muted);
+  word-break: break-all;
 }
 
 .mc-receipt-verified-chip {
@@ -175,6 +223,8 @@
   background: rgba(16, 185, 129, 0.1);
   padding: 4px 8px;
   border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Appointment Info Table */
@@ -182,6 +232,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mc-receipt-detail-item {
@@ -191,7 +243,13 @@
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.mc-receipt-detail-full {
+  grid-column: span 2;
 }
 
 [data-theme="dark"] .mc-receipt-detail-item {
@@ -213,9 +271,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 /* Itemized Charges */
@@ -226,19 +283,28 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-sizing: border-box;
 }
 
 .mc-receipt-line {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   font-size: 0.85rem;
   color: var(--mc-muted);
+}
+
+.mc-receipt-line span {
+  min-width: 0;
+  word-break: break-word;
 }
 
 .mc-receipt-line strong {
   color: var(--mc-text);
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .mc-receipt-line.credit-discount {
@@ -253,7 +319,9 @@
 .mc-receipt-total {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   padding-top: 4px;
 }
 
@@ -264,9 +332,10 @@
 }
 
 .mc-receipt-total-amount {
-  font-size: 1.6rem;
+  font-size: clamp(1.3rem, 5vw, 1.6rem);
   font-weight: 900;
   color: var(--mc-primary);
+  word-break: break-word;
 }
 
 .mc-receipt-total-amount.zero {
@@ -283,10 +352,11 @@
   border: 1px solid rgba(34, 197, 94, 0.3);
   border-radius: var(--mc-radius);
   padding: 16px 18px;
-  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .mc-pay-credits-banner.exhausted {
@@ -298,12 +368,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .mc-pay-credits-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   font-weight: 700;
   font-size: 0.92rem;
   color: var(--mc-text);
@@ -316,6 +388,7 @@
   border-radius: 99px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .mc-pay-credits-badge.active {
@@ -339,6 +412,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mc-pay-credit-pill {
@@ -349,6 +424,9 @@
   align-items: center;
   gap: 6px;
   font-weight: 600;
+  word-break: break-word;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .mc-pay-credit-pill.available {
@@ -374,7 +452,7 @@
   color: #ffffff;
   border: none;
   border-radius: var(--mc-radius);
-  padding: 13px 18px;
+  padding: 13px 16px;
   font-weight: 700;
   font-size: 0.92rem;
   display: flex;
@@ -385,6 +463,9 @@
   box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
   width: 100%;
+  box-sizing: border-box;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .mc-pay-free-btn:hover:not(:disabled) {
@@ -408,7 +489,7 @@
 .mc-pay-card-preview {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
   border-radius: 16px;
-  padding: 20px 22px;
+  padding: 18px 20px;
   color: #ffffff;
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2);
   margin-bottom: 20px;
@@ -416,6 +497,9 @@
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 .mc-pay-card-preview:hover {
@@ -437,16 +521,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .mc-pay-chip {
-  width: 36px;
-  height: 26px;
+  width: 34px;
+  height: 24px;
   background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-  border-radius: 6px;
+  border-radius: 5px;
   box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
   position: relative;
+  flex-shrink: 0;
 }
 
 .mc-pay-chip::before {
@@ -460,7 +545,7 @@
 }
 
 .mc-pay-card-brand {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 1px;
   font-style: italic;
@@ -468,40 +553,58 @@
   align-items: center;
   gap: 4px;
   color: #ffffff;
+  flex-shrink: 0;
 }
 
 .mc-pay-card-number {
-  font-size: 1.15rem;
+  font-size: clamp(0.9rem, 4vw, 1.15rem);
   letter-spacing: 2px;
   font-family: monospace;
   font-weight: 600;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mc-pay-card-bottom {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  gap: 10px;
 }
 
 .mc-pay-card-holder-label,
 .mc-pay-card-exp-label {
   font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   opacity: 0.7;
   display: block;
   margin-bottom: 2px;
 }
 
-.mc-pay-card-holder,
-.mc-pay-card-exp {
-  font-size: 0.85rem;
+.mc-pay-card-holder {
+  font-size: clamp(0.75rem, 3.2vw, 0.85rem);
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  display: block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mc-pay-card-exp {
+  font-size: clamp(0.75rem, 3.2vw, 0.85rem);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ============================================================
@@ -511,12 +614,16 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mc-pay-field {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mc-pay-label {
@@ -526,12 +633,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 6px;
 }
 
 .mc-pay-input-wrap {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mc-pay-input-wrap i.mc-pay-icon {
@@ -553,6 +663,7 @@
   color: var(--mc-text);
   font-weight: 600;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 [data-theme="dark"] .mc-pay-input {
@@ -580,6 +691,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Demo Autofill Button */
@@ -596,6 +709,8 @@
   gap: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .mc-pay-demo-btn:hover {
@@ -621,6 +736,8 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
   width: 100%;
   margin-top: 6px;
+  box-sizing: border-box;
+  min-height: 48px;
 }
 
 .mc-pay-submit-btn:hover:not(:disabled) {
@@ -651,12 +768,14 @@
   font-size: 0.74rem;
   font-weight: 600;
   flex-wrap: wrap;
+  text-align: center;
 }
 
 .mc-pay-trust-item {
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .mc-pay-trust-item i {
@@ -675,6 +794,8 @@
   max-width: 580px;
   margin: 20px auto;
   animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 [data-theme="dark"] .mc-pay-success-box {
@@ -695,3 +816,99 @@
   box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4);
   animation: pulse 2s infinite;
 }
+
+/* ============================================================
+   MOBILE RESPONSIVE OVERRIDES (< 768px & < 480px)
+   ============================================================ */
+@media (max-width: 768px) {
+  .mc-pay-page {
+    padding: 16px 12px 140px;
+  }
+  
+  .mc-pay-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .mc-receipt-header {
+    padding: 14px 16px;
+  }
+
+  .mc-receipt-body {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .mc-receipt-details-table {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .mc-receipt-detail-full {
+    grid-column: span 1;
+  }
+
+  .mc-pay-card {
+    padding: 18px 14px;
+  }
+
+  .mc-pay-card-preview {
+    padding: 16px 14px;
+    margin-bottom: 16px;
+  }
+
+  .mc-pay-card-number {
+    font-size: 0.95rem;
+    letter-spacing: 1.2px;
+    margin-bottom: 14px;
+  }
+
+  .mc-pay-submit-btn {
+    padding: 14px 16px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mc-pay-page {
+    padding: 12px 10px 140px;
+  }
+
+  .mc-receipt-patient-box {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 12px;
+  }
+
+  .mc-pay-card-number {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+  
+  .mc-pay-card-holder,
+  .mc-pay-card-exp {
+    font-size: 0.75rem;
+  }
+
+  .mc-pay-row-2col {
+    gap: 8px;
+  }
+
+  .mc-pay-credits-steps {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .mc-pay-credits-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .mc-pay-trust {
+    gap: 8px 14px;
+    font-size: 0.7rem;
+  }
+}
+

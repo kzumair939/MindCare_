@@ -22,8 +22,14 @@ export default function MySessions() {
     setCurrentPage(1);
   }, [filter, sortOrder]);
 
-  const tabs = ["ALL","BOOKED","CONFIRMED","COMPLETED","CANCELLED"];
+  const tabs = ["ALL", "CONFIRMED", "PENDING_PAYMENT", "COMPLETED", "MISSED", "CANCELLED"];
   
+  function tabLabel(t) {
+    if (t === "ALL") return "All";
+    if (t === "PENDING_PAYMENT") return "Pending Payment";
+    return t.charAt(0) + t.slice(1).toLowerCase();
+  }
+
   // 1. Filter
   const filtered = filter === "ALL" ? sessions : sessions.filter(s => s.status === filter);
   
@@ -50,8 +56,17 @@ export default function MySessions() {
   }
 
   function statusBadge(s) {
-    const map = {BOOKED:"booked",CONFIRMED:"confirmed",COMPLETED:"completed",CANCELLED:"cancelled",PENDING:"pending"};
-    return <span className={`mc-status mc-status-${map[s]||"pending"}`}>{s}</span>;
+    const map = {
+      PENDING_PAYMENT: "pending",
+      PENDING: "pending",
+      BOOKED: "confirmed",
+      CONFIRMED: "confirmed",
+      COMPLETED: "completed",
+      CANCELLED: "cancelled",
+      MISSED: "missed"
+    };
+    const label = s === "PENDING_PAYMENT" ? "Payment Pending" : (s ? s.charAt(0) + s.slice(1).toLowerCase() : "Pending");
+    return <span className={`mc-status mc-status-${map[s]||"pending"}`}>{label}</span>;
   }
 
   return (
@@ -72,7 +87,7 @@ export default function MySessions() {
           <div className="mc-tab-bar" style={{ margin: 0 }}>
             {tabs.map(t => (
               <button key={t} className={`mc-tab${filter===t?" active":""}`} onClick={() => setFilter(t)}>
-                {t==="ALL" ? `All (${sessions.length})` : t.charAt(0)+t.slice(1).toLowerCase()}
+                {t==="ALL" ? `All (${sessions.length})` : tabLabel(t)}
                 {t!=="ALL" && <span className="mc-tab-count">{sessions.filter(s=>s.status===t).length}</span>}
               </button>
             ))}
@@ -133,6 +148,11 @@ export default function MySessions() {
                   </div>
 
                   <div className="mc-session-card-actions">
+                    {s.status === "PENDING_PAYMENT" && (
+                      <Link to={`/payment/${s.id}`} className="mc-btn-confirm" style={{ textDecoration: "none" }}>
+                        <i className="bi bi-credit-card-fill me-1"/>Complete Payment
+                      </Link>
+                    )}
                     {isJoinable(s) && (
                       <Link to={`/session/${s.id}/online`} className="mc-btn-join">
                         <i className="bi bi-camera-video-fill me-1"/>Join Session

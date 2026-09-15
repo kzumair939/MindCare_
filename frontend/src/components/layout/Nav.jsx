@@ -66,7 +66,12 @@ export default function Nav() {
     : user?.role === "ROLE_THERAPIST" ? "/therapist"
     : user ? "/dashboard" : "/";
 
-  const isActive = (to) => location.pathname === to || (to !== "/" && location.pathname.startsWith(to + "/"));
+  const isActive = (to) => {
+    if (to === "/admin" || to === "/therapist" || to === "/dashboard" || to === "/") {
+      return location.pathname === to;
+    }
+    return location.pathname === to || location.pathname.startsWith(to + "/");
+  };
 
   function handleLogout() {
     setLogoutConfirm(false);

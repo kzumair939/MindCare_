@@ -69,23 +69,26 @@ public class SessionServiceImpl implements SessionService {
         }
 
         boolean exists = sessionRepository
-                .existsByTherapistAndSessionDateAndSessionTimeAndStatus(therapist, date, time, AppointmentStatus.BOOKED);
+                .existsByTherapistAndSessionDateAndSessionTimeAndStatusIn(
+                        therapist, date, time, List.of(AppointmentStatus.BOOKED, AppointmentStatus.CONFIRMED));
 
         if (exists) {
             throw new BadRequestException("This therapist is already booked for this time");
         }
+
+        Integer effectiveFee = feeAmount != null ? feeAmount : (therapist.getSessionPrice() != null ? therapist.getSessionPrice() : 50);
 
         Session session = Session.builder()
                 .user(user)
                 .therapist(therapist)
                 .sessionDate(date)
                 .sessionTime(time)
-                .sessionType(mode)
-                .therapyType(therapyType)
-                .feeAmount(feeAmount)
+                .sessionType(mode != null ? mode : "Video")
+                .therapyType(therapyType != null ? therapyType : TherapyType.GENERAL_COUNSELLING)
+                .feeAmount(effectiveFee)
                 .priority(priority)
                 .durationMinutes(60)
-                .status(AppointmentStatus.BOOKED)
+                .status(AppointmentStatus.PENDING_PAYMENT)
                 .build();
 
         Session savedSession;

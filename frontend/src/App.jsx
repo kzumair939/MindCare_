@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 // Auth
 import Login    from "./pages/auth/Login";
@@ -48,6 +49,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <ScrollToTop />
         <Routes>
           {/* Public */}
           <Route path="/"              element={<Landing/>}/>

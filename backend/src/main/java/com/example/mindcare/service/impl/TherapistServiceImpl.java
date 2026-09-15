@@ -321,12 +321,11 @@ public class TherapistServiceImpl implements TherapistService {
             Path target = uploadDir.resolve(name);
             Files.write(target, file.getBytes());
 
-            // Remove old picture if present
-            if (therapist.getProfilePicturePath() != null) {
-                try { Files.deleteIfExists(Paths.get(therapist.getProfilePicturePath())); } catch (Exception ignored) {}
+            String webPath = "/uploads/profile-pictures/" + name;
+            therapist.setProfilePicturePath(webPath);
+            if (therapist.getUserAccount() != null) {
+                therapist.getUserAccount().setProfilePicturePath(webPath);
             }
-
-            therapist.setProfilePicturePath(target.toString());
             therapistRepository.save(therapist);
         } catch (Exception ex) {
             throw new BadRequestException("Profile picture upload failed: " + ex.getMessage());
